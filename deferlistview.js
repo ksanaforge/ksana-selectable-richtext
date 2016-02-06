@@ -35,12 +35,7 @@ var DeferListView=React.createClass({
 		var ds=new ListView.DataSource({rowHasChanged:this.rowHasChanged});
 		return {dataSource: ds.cloneWithRows(this.getRows({}))};
 	}
-	,rowHasChanged:function(r1,r2){
-		if (r1!==r2){
-			console.log('row changed',r1,r2);
-		}
-		return r1!==r2;
-	}
+	,rowHasChanged:(r1,r2)=>r1!==r2
 	,getRows:function(loaded){
 		var out=[];
 		for (var i=0;i<this.rows.length;i++) {
