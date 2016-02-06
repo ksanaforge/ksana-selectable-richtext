@@ -31,12 +31,12 @@ var Paragraph=React.createClass({
 			nextState.tokenOffsets=res.offsets;
 			return true;
 		}
-		var selectedChanged=this.isSelectedPara(nextProps) !== this.isSelectedPara(this.props);
-		if (selectedChanged && this.isSelectedPara(nextProps)) {
+		var selectedChanged=this.isParagraphSelected(nextProps) !== this.isParagraphSelected(this.props);
+		if (selectedChanged && this.isParagraphSelected(nextProps)) {
 			nextState.selStart=-1;
 			nextState.selEnd=-1;//clear token Selection when select again
 		}
-		return selectedChanged||this.isSelectedPara(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
+		return selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
 	}
 	,selectSentence:function(n){
 		var start=n,end=n;
@@ -67,20 +67,19 @@ var Paragraph=React.createClass({
 		}
 		
 	}
-	,isSelectedPara:function(props){
+	,isParagraphSelected:function(props){
 		props=props||this.props;
 		var para=this.props.para;
 		if (props.paraStart<0||props.paraEnd<0)return false;
 		if (para>=props.paraStart && para<=props.paraEnd)return true;
-		if (para<props.paraStart || para>props.paraEnd)return false;
 		return false;
 	}
-	,isSelected:function(n,props){
+	,isTokenSelected:function(n,props){
 		props=props||this.props;
 		var para=this.props.para;
-		if (props.paraStart<0||props.paraEnd<0)return false;
-		if (para<props.paraStart || para>props.paraEnd)return false;
-		if (para>props.paraStart && para<props.paraEnd)return true;
+		if (props.paraStart<0||props.paraEnd<0)return false;//no selected paragraph
+		if (para<props.paraStart || para>props.paraEnd)return false;//out of range
+		if (para>props.paraStart && para<props.paraEnd)return true;//within range
 
 		var start=this.state.selStart;
 		var end=this.state.selEnd;
@@ -101,24 +100,24 @@ var Paragraph=React.createClass({
 	}
 	,renderToken:function(token,idx){
 		return <Text onTouchStart={this.onTokenTouchStart.bind(this,idx)}
-		style={this.isSelected(idx)?styles.selectedToken:null} 
+		style={this.isTokenSelected(idx)?[styles.selectedToken,this.props.selectedTextStyle]:null} 
 		ref={idx} key={idx}>{token}</Text>
 	}
 	,render:function(){
-		if (!this.isSelectedPara()) {
+		if (!this.isParagraphSelected()) {
 			return <View>
 			<Text style={this.props.textStyle}>{this.props.text}</Text></View>;
 		}
 		
 //{...this._panResponder.panHandlers}
 		return <View style={{flex:1}}>
-		<Text style={styles.selectedParagraph}>
+		<Text style={[styles.selectedParagraph,this.props.textStyle,this.props.selectedStyle]}>
 		{this.state.tokens.map(this.renderToken)}</Text></View>
 	}
 });
 var styles=StyleSheet.create({
-	selectedParagraph:{fontSize:24,backgroundColor:'lightyellow'},
-	selectedToken:{backgroundColor:'yellow'}
+	selectedParagraph:{backgroundColor:'rgb(212,232,255'},
+	selectedToken:{backgroundColor:'rgb(96,176,255)'}
 
 	//textShadowColor:'yellow',	textShadowRadius:6,textShadowOffset:{width:1,height:1}}
 })

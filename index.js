@@ -48,14 +48,16 @@ var SelectableRichText=React.createClass({
 	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text||"",idx=parseInt(row);
-			return <View 
+			return <View style={this.props.style}
 			onTouchStart={this.onTouchStart.bind(this,idx)}
 			onTouchEnd={this.onTouchEnd.bind(this,idx)}>
 
 			<Paragraph 
 				key={idx} para={idx} text={text} 
 				token={this.state.token} 
+				selectedStyle={this.props.selectedStyle}
 				textStyle={this.props.textStyle}
+				selectedTextStyle={this.props.selectedTextStyle}
 				selectToken={this.selectToken} 
 				paraStart={this.state.paraStart} 
 				paraEnd={this.state.paraEnd}
