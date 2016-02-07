@@ -5,6 +5,7 @@ var {
 var rowY={};
 var DeferListView=require("./deferlistview");
 var Paragraph=require("./paragraph");
+
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
 		return {paraStart:-1,paraEnd:-1,token:null};
@@ -46,6 +47,11 @@ var SelectableRichText=React.createClass({
 			this.setState({paraEnd:para});
 		}
 	}
+	,visibleChanged:function(start,end){
+		if (this.state.paraStart>end || start>this.state.paraEnd) {
+			this.cancelSelection();
+		}
+	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text||"",idx=parseInt(row);
 			return <View style={this.props.style}
@@ -62,12 +68,14 @@ var SelectableRichText=React.createClass({
 				paraStart={this.state.paraStart} 
 				paraEnd={this.state.paraEnd}
 				trimSelection={this.trimSelection}
+
 				cancelSelection={this.cancelSelection}/>
 			</View>
 		
 	}
 	,render:function(){
-		return <DeferListView {...this.props} renderRow={this.renderRow} />
+		return <DeferListView {...this.props} visibleChanged={this.visibleChanged}
+		renderRow={this.renderRow} />
 	}
 });
 

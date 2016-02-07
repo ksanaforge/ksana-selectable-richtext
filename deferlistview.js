@@ -16,6 +16,7 @@ var DeferListView=React.createClass({
 		rows:PropTypes.array.isRequired, 
 		onFetchText:PropTypes.func,
 		renderRow:PropTypes.func,
+		visibleChanged:PropTypes.func,
 		style:PropTypes.object
 	}
 	,rowY:{}
@@ -68,7 +69,10 @@ var DeferListView=React.createClass({
 		tofetch.forEach(task);
 		taskqueue.push(function(err,data,retrow){
 			loaded[retrow]=data;
-			this.updateText(loaded);
+			setTimeout(function(){
+				this.updateText(loaded);
+			}.bind(this),100);
+			
 		}.bind(this));
 		taskqueue.shift()(0,{empty:true});
 	}
@@ -85,15 +89,21 @@ var DeferListView=React.createClass({
 		}.bind(this));		
 	}
 	,onChangeVisibleRows:function(visibleRows){
-		var loading=0,tofetch=[],rows=this.props.rows;
+		var loading=0,tofetch=[],visibles=[],rows=this.props.rows;
 		for (row in visibleRows.s1) {
 			if (!rows[row].text) {
 				tofetch.push(row);
 				loading++;
 			}
+			visibles.push(parseInt(row));
 		}
 		if (!loading) return;
 		this.fetchTexts(tofetch);
+
+		clearTimeout(this.visibletimer)
+		this.visibletimer=setTimeout(function(){
+			this.props.visibleChanged&&this.props.visibleChanged(visibles[0],visibles[visibles.length-1]);
+		}.bind(this),1000);
 	}
 	,onRowLayout:function(rowid,evt){
 		this.rowY[rowid]=evt.nativeEvent.layout.y;
@@ -119,8 +129,5 @@ var DeferListView=React.createClass({
 		</View>
 	}
 });
-/*
-<TextInput style={{width:100,height:22}} ref="uti" onChangeText={this.setUti} value={this.state.uti}/>
-		<TouchableHighlight onPress={this.scroll}><Text>scroll</Text></TouchableHighlight>
-		*/
+
 module.exports=DeferListView;
