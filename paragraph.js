@@ -6,9 +6,11 @@ var {
   View,Text,StyleSheet,
   PanResponder,PropTypes
 } =React;
-
+var E=React.createElement;
 var {tokenizer,isTextToken}=require("./tokenizer");
 
+
+var breakmarkup=require("./breakmarkup");
 var Paragraph=React.createClass({
 	propTypes:{
 		paraStart:PropTypes.number.isRequired,//starting paragraph id
@@ -18,25 +20,36 @@ var Paragraph=React.createClass({
 		cancelSelection:PropTypes.func.isRequired
 	}
 	,getInitialState:function() {
-		var res=(this.props.tokenizer||tokenizer)(this.props.text);
-		return {tokens:res.tokens,tokenOffsets:res.offsets,selStart:-1,selEnd:-1};
+		var res={tokens:[]};
+		if (this.props.text) {
+				var res=this.breakTextByMarkup(this.props.text,this.props.markups,this.isParagraphSelected());	
+		}
+
+		return {tokens:res.tokens,tokenOffsets:res.offsets,tokenMarkup:res.markups,selStart:-1,selEnd:-1,typedef:this.props.typedef||{}};
+	}
+	,breakTextByMarkup:function(text,markups,selectable) {
+		var tknz=this.props.tokenizer||tokenizer;
+		return breakmarkup(tknz,text,markups,selectable);
 	}
 	,selectToken:function(idx){
 		this.props.selectToken(idx);
 	}
 	,shouldComponentUpdate:function(nextProps,nextState){
-		if (nextProps.text!==this.props.text) {
-			var res=(this.props.tokenizer||tokenizer)(nextProps.text);
-			nextState.tokens=res.tokens;
-			nextState.tokenOffsets=res.offsets;
-			return true;
-		}
+
 		var selectedChanged=this.isParagraphSelected(nextProps) !== this.isParagraphSelected(this.props);
 		if (selectedChanged && this.isParagraphSelected(nextProps)) {
 			nextState.selStart=-1;
 			nextState.selEnd=-1;//clear token Selection when select again
 		}
-		return selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
+		var contentChanged=nextProps.markups!==this.props.markups || nextProps.text!==this.props.text;
+		if (selectedChanged||this.isParagraphSelected(nextProps) || contentChanged) {
+			var res=this.breakTextByMarkup(nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps));
+			nextState.tokens=res.tokens||[];
+			nextState.tokenOffsets=res.offsets||[];
+			nextState.tokenMarkup=res.markups||[];
+		}		
+
+		return contentChanged||selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
 	}
 	,selectSentence:function(n){
 		var start=n,end=n;
@@ -98,21 +111,41 @@ var Paragraph=React.createClass({
 
 		return (n>=start)&&(n<=end);
 	}
+	,getTokenStyle:function(n) {
+		var M=this.state.tokenMarkup[n];
+		var markups=this.props.markups;
+		if (!M)return null;
+
+		var out={},typedef=this.state.typedef;
+		M.forEach(function(m,idx){
+			if (!markups[m])return;
+			var type=markups[m].type;
+			if (typedef[type] &&typedef[type].style ) {
+				out=Object.assign(out,typedef[type].style);
+			}
+		});
+
+		return out;
+	}
 	,renderToken:function(token,idx){
-		return <Text onTouchStart={this.onTokenTouchStart.bind(this,idx)}
-		style={this.isTokenSelected(idx)?[styles.selectedToken,this.props.selectedTextStyle]:null} 
-		ref={idx} key={idx}>{token}</Text>
+		var tokenStyle=this.getTokenStyle(idx);
+		
+		return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
+			,style:this.isTokenSelected(idx)?
+				[styles.selectedToken,this.props.selectedTextStyle].concat(tokenStyle):tokenStyle 
+				,ref:idx,key:idx},token);
 	}
 	,render:function(){
 		if (!this.isParagraphSelected()) {
-			return <View>
-			<Text style={this.props.textStyle}>{this.props.text}</Text></View>;
+			return E(View,null,
+				E(Text,{onTouchStart:this.props.onTouchStart,style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
 		}
 		
 //{...this._panResponder.panHandlers}
-		return <View style={{flex:1}}>
-		<Text style={[styles.selectedParagraph,this.props.textStyle,this.props.selectedStyle]}>
-		{this.state.tokens.map(this.renderToken)}</Text></View>
+		return E(View,{style:{flex:1}},
+			E(Text,
+				{style:[styles.selectedParagraph,this.props.textStyle,this.props.selectedStyle]},
+				this.state.tokens.map(this.renderToken)));
 	}
 });
 var styles=StyleSheet.create({

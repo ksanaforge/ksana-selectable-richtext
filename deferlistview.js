@@ -4,6 +4,7 @@ var React=require("react-native");
 var {
   View,Text,Image,ListView,StyleSheet,TouchableHighlight,PropTypes
 } =React;
+var E=React.createElement;
 /*
  cloneWithRows , the array passed must be changed too (assume immutable array) 
 
@@ -27,7 +28,7 @@ var DeferListView=React.createClass({
 				cb(0,this.props.rows[row].text,row);
 			},
 			renderRow:function(rowData,row){
-				return <Text>{rowData.text?row+rowData.text:row}</Text>
+				return React.createElement(Text,null,rowData.text?row+rowData.text:row);
 			}
 		}
 	}
@@ -109,9 +110,9 @@ var DeferListView=React.createClass({
 		this.rowY[rowid]=evt.nativeEvent.layout.y;
 	}
 	,renderRow:function(rowData,sectionId,rowId,highlightRow){	
-		return <View style={{overflow:'hidden'}}
-		 onLayout={this.onRowLayout.bind(this,rowId)}>
-		 {this.props.renderRow(rowData,rowId,highlightRow)}</View>
+		return E(View ,{style:{overflow:'hidden'}
+		 ,onLayout:this.onRowLayout.bind(this,rowId)}
+		 ,this.props.renderRow(rowData,rowId,highlightRow));
 	}
 	,scrollToRow:function(row){
 		var y=this.rowY[row];
@@ -121,12 +122,11 @@ var DeferListView=React.createClass({
 		}
 	}
 	,render:function(){
-		return <View style={{flex:1}}>
-		
-		<ListView ref="list" style={[this.props.style,{overflow:'hidden'}]} dataSource={this.state.dataSource} 
-		renderRow={this.renderRow} onChangeVisibleRows={this.onChangeVisibleRows}
-		 pageSize={30} initialListSize={1}/>
-		</View>
+		return E(View,{style:{flex:1}},
+		E(ListView,{ref:"list",style:[this.props.style,{overflow:'hidden'}],
+		 dataSource:this.state.dataSource 
+		 ,renderRow:this.renderRow, onChangeVisibleRows:this.onChangeVisibleRows
+		 ,pageSize:30,initialListSize:1}));
 	}
 });
 

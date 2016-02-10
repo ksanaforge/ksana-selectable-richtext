@@ -5,6 +5,7 @@ var {
 var rowY={};
 var DeferListView=require("./deferlistview");
 var Paragraph=require("./paragraph");
+var E=React.createElement;
 
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
@@ -52,26 +53,29 @@ var SelectableRichText=React.createClass({
 			this.cancelSelection();
 		}
 	}
+	,getSentenceMarkup:function(sid){
+		return this.props.markups[sid];
+	}	
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text||"",idx=parseInt(row);
-			return <View style={this.props.style}
-			onTouchStart={this.onTouchStart.bind(this,idx)}
-			onTouchEnd={this.onTouchEnd.bind(this,idx)}>
-
-			<Paragraph 
-				key={idx} para={idx} text={text} 
-				token={this.state.token} 
-				selectedStyle={this.props.selectedStyle}
-				textStyle={this.props.textStyle}
-				selectedTextStyle={this.props.selectedTextStyle}
-				selectToken={this.selectToken} 
-				paraStart={this.state.paraStart} 
-				paraEnd={this.state.paraEnd}
-				trimSelection={this.trimSelection}
-
-				cancelSelection={this.cancelSelection}/>
-			</View>
-		
+			return E(View, {style:this.props.style
+			,onTouchStart:this.onTouchStart.bind(this,idx)
+			,onTouchEnd:this.onTouchEnd.bind(this,idx)},
+				E(Paragraph, 
+				{key:idx, para:idx, text:text 
+				,token:this.state.token
+				,typedef:this.props.typedef
+				,markups:this.getSentenceMarkup(idx)
+				,selectedStyle:this.props.selectedStyle
+				,textStyle:this.props.textStyle
+				,selectedTextStyle:this.props.selectedTextStyle
+				,selectToken:this.selectToken
+				,paraStart:this.state.paraStart
+				,paraEnd:this.state.paraEnd
+				,trimSelection:this.trimSelection
+				,cancelSelection:this.cancelSelection}
+				)
+			);
 	}
 	,render:function(){
 		return <DeferListView {...this.props} visibleChanged={this.visibleChanged}
