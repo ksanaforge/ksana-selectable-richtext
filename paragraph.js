@@ -9,7 +9,6 @@ var {
 var E=React.createElement;
 var {tokenizer,isTextToken}=require("./tokenizer");
 
-
 var breakmarkup=require("./breakmarkup");
 var Paragraph=React.createClass({
 	propTypes:{
@@ -18,7 +17,22 @@ var Paragraph=React.createClass({
 		para:PropTypes.number.isRequired,  //paragraph id
 		trimSelection:PropTypes.func.isRequired,
 		cancelSelection:PropTypes.func.isRequired,
-		onMarkupClick:PropTypes.func
+		onMarkupClick:PropTypes.func,
+		eventEmitter:PropTypes.object.isRequired
+	}
+	,componentWillUnmount:function(){
+		this.props.eventEmitter.removeListener('adjustSelection',this.adjustSelection);
+	}
+	,componentDidMount:function(){
+		this.props.eventEmitter.addListener('adjustSelection', this.adjustSelection);
+	}
+	,adjustSelection:function(n){
+		if (this.state.selStart===-1||this.state.selEnd===-1)return;
+		if (n>0 && this.state.selEnd+n<this.state.tokens.length) {
+			this.setState({selEnd:this.state.selEnd+n});
+		} else if (n<0&&this.state.selStart+n>0){
+			this.setState({selStart:this.state.selStart+n});
+		}
 	}
 	,getInitialState:function() {
 		var res={tokens:[]};
@@ -48,7 +62,7 @@ var Paragraph=React.createClass({
 			nextState.tokens=res.tokens||[];
 			nextState.tokenOffsets=res.offsets||[];
 			nextState.tokenMarkup=res.markups||[];
-		}		
+		}
 
 		return contentChanged||selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
 	}

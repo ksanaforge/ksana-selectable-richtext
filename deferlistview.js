@@ -110,7 +110,7 @@ var DeferListView=React.createClass({
 		this.rowY[rowid]=evt.nativeEvent.layout.y;
 	}
 	,renderRow:function(rowData,sectionId,rowId,highlightRow){	
-		return E(View ,{style:{overflow:'hidden'}
+		return E(View ,{ref:"para"+rowId,style:{overflow:'hidden'}
 		 ,onLayout:this.onRowLayout.bind(this,rowId)}
 		 ,this.props.renderRow(rowData,rowId,highlightRow));
 	}

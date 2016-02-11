@@ -7,8 +7,12 @@ var DeferListView=require("./deferlistview");
 var Paragraph=require("./paragraph");
 var E=React.createElement;
 
+import EventEmitter from "react-native/Libraries/vendor/emitter/EventEmitter";
+//var EventEmitter=require("react-native/Libraries/Vendor/emitter/EventEmitter");
+
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
+		this.eventEmitter=new EventEmitter();
 		return {paraStart:-1,paraEnd:-1,token:null};
 	}
 	,onTouchEnd:function(n,evt) {
@@ -56,7 +60,15 @@ var SelectableRichText=React.createClass({
 	}
 	,getSentenceMarkup:function(sid){
 		return this.props.markups[sid];
-	}	
+	}
+	,markLeft:function(){
+		if (this.state.paraStart===-1) return;
+		this.eventEmitter.emit('adjustSelection',-1);
+	}
+	,markRight:function(){
+		if (this.state.paraEnd===-1) return;
+		this.eventEmitter.emit('adjustSelection',1);
+	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text||"",idx=parseInt(row);
 			return E(View, {style:this.props.style},
@@ -75,12 +87,13 @@ var SelectableRichText=React.createClass({
 				,paraStart:this.state.paraStart
 				,paraEnd:this.state.paraEnd
 				,trimSelection:this.trimSelection
+				,eventEmitter:this.eventEmitter
 				,cancelSelection:this.cancelSelection}
 				)
 			);
 	}
 	,render:function(){
-		return <DeferListView {...this.props} visibleChanged={this.visibleChanged}
+		return <DeferListView ref="listview" {...this.props} visibleChanged={this.visibleChanged}
 		renderRow={this.renderRow} />
 	}
 });
