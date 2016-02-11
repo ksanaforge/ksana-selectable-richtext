@@ -15,6 +15,18 @@ var SelectableRichText=React.createClass({
 		this.eventEmitter=new EventEmitter();
 		return {paraStart:-1,paraEnd:-1,token:null};
 	}
+	,getSelection:function(){
+		return {paraStart:this.state.paraStart,paraEnd:this.state.paraEnd,selStart:this.selStart,selEnd:this.selEnd};
+	}	
+	,selStart:-1
+	,selEnd:-1
+	,componentWillUnmount:function(){
+		this.eventEmitter.removeAllListeners();	
+	}
+	,onSelectionChanged:function(selStart,selEnd,lastStart,lastEnd) {
+		this.selStart=selStart;
+		this.selEnd=selEnd;
+	}
 	,onTouchEnd:function(n,evt) {
 		var touches=evt.nativeEvent.touches;
 		var cTouches=evt.nativeEvent.changedTouches;
@@ -43,6 +55,8 @@ var SelectableRichText=React.createClass({
 		return (n>=start)&&(n<=end);
 	}
 	,cancelSelection:function(){
+		this.selStart=-1;
+		this.selEnd=-1;
 		this.setState({paraStart:-1,paraEnd:-1});
 	}
 	,trimSelection:function(para,start) {
@@ -76,7 +90,8 @@ var SelectableRichText=React.createClass({
 				{key:idx, para:idx, text:text 
 				,onTouchStart:this.onTouchStart.bind(this,idx)
 				,onTouchEnd:this.onTouchEnd.bind(this,idx)
-				,onMarkupClick:this.props.onMarkupClick
+				,onHyperlink:this.props.onHyperlink
+				,onSelectionChanged:this.onSelectionChanged
 				,token:this.state.token
 				,typedef:this.props.typedef
 				,markups:this.getSentenceMarkup(idx)

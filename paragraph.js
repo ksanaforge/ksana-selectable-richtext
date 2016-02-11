@@ -18,13 +18,11 @@ var Paragraph=React.createClass({
 		trimSelection:PropTypes.func.isRequired,
 		cancelSelection:PropTypes.func.isRequired,
 		onMarkupClick:PropTypes.func,
-		eventEmitter:PropTypes.object.isRequired
-	}
-	,componentWillUnmount:function(){
-		this.props.eventEmitter.removeListener('adjustSelection',this.adjustSelection);
+		eventEmitter:PropTypes.object.isRequired,
+		onSelectionChanged:PropTypes.func
 	}
 	,componentDidMount:function(){
-		this.props.eventEmitter.addListener('adjustSelection', this.adjustSelection);
+		this.props.eventEmitter&&this.props.eventEmitter.addListener('adjustSelection', this.adjustSelection);
 	}
 	,adjustSelection:function(n){
 		if (this.state.selStart===-1||this.state.selEnd===-1)return;
@@ -63,7 +61,6 @@ var Paragraph=React.createClass({
 			nextState.tokenOffsets=res.offsets||[];
 			nextState.tokenMarkup=res.markups||[];
 		}
-
 		return contentChanged||selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
 	}
 	,selectSentence:function(n){
@@ -94,6 +91,11 @@ var Paragraph=React.createClass({
 			this.props.trimSelection(this.props.para);
 		}
 		
+	}
+	,componentDidUpdate:function(prevProps,prevState) {
+		if (prevState.selStart!==this.state.selStart || prevState.selEnd!==this.state.selEnd) {
+			this.props.onSelectionChanged&&this.props.onSelectionChanged(this.state.selStart,this.state.selEnd,prevState.selStart,prevState.selEnd);
+		}
 	}
 	,isParagraphSelected:function(props){
 		props=props||this.props;
@@ -145,7 +147,7 @@ var Paragraph=React.createClass({
 	,tokenHandler:function(n,evt){
 		this.hyperlink_clicked=true; //cancel bubbling to onTouchStart
 		var M=this.state.tokenMarkup[n];
-		this.props.onMarkupClick&&this.props.onMarkupClick(this.props.para,M);
+		this.props.onHyperlink&&this.props.onHyperlink(this.props.para,M);
 		//TODO highlight hyperlink
 	}
 	,getTokenHandler:function(n) {
