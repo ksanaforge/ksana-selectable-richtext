@@ -17,7 +17,8 @@ var Paragraph=React.createClass({
 		paraEnd:PropTypes.number.isRequired, //ending paragraph id
 		para:PropTypes.number.isRequired,  //paragraph id
 		trimSelection:PropTypes.func.isRequired,
-		cancelSelection:PropTypes.func.isRequired
+		cancelSelection:PropTypes.func.isRequired,
+		onMarkupClick:PropTypes.func
 	}
 	,getInitialState:function() {
 		var res={tokens:[]};
@@ -113,9 +114,9 @@ var Paragraph=React.createClass({
 	}
 	,getTokenStyle:function(n) {
 		var M=this.state.tokenMarkup[n];
-		var markups=this.props.markups;
 		if (!M)return null;
 
+		var markups=this.props.markups;
 		var out={},typedef=this.state.typedef;
 		M.forEach(function(m,idx){
 			if (!markups[m])return;
@@ -127,18 +128,43 @@ var Paragraph=React.createClass({
 
 		return out;
 	}
+	,tokenHandler:function(n,evt){
+		this.hyperlink_clicked=true; //cancel bubbling to onTouchStart
+		var M=this.state.tokenMarkup[n];
+		this.props.onMarkupClick&&this.props.onMarkupClick(this.props.para,M);
+		//TODO highlight hyperlink
+	}
+	,getTokenHandler:function(n) {
+		var M=this.state.tokenMarkup[n];
+		if (!M || !Object.keys(M).length)return null;
+		var markups=this.props.markups;
+		var out={},typedef=this.state.typedef;
+
+		if (typedef[ markups[M[0]].type]) {
+			return this.tokenHandler.bind(this,n);
+		} 
+		return null; //onTouchStart
+	}
+	,onTouchStart:function(){
+		if (this.hyperlink_clicked) {
+			this.hyperlink_clicked=false;
+		} else {
+			this.props.onTouchStart.apply(this,arguments);
+		}
+	}
 	,renderToken:function(token,idx){
 		var tokenStyle=this.getTokenStyle(idx);
-		
-		return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
+		var tokenHandler=this.getTokenHandler(idx);
+
+		return E(Text,{onTouchStart:this.isParagraphSelected()?this.onTokenTouchStart.bind(this,idx):tokenHandler
 			,style:this.isTokenSelected(idx)?
 				[styles.selectedToken,this.props.selectedTextStyle].concat(tokenStyle):tokenStyle 
 				,ref:idx,key:idx},token);
 	}
 	,render:function(){
 		if (!this.isParagraphSelected()) {
-			return E(View,null,
-				E(Text,{onTouchStart:this.props.onTouchStart,style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
+			return E(View,{onTouchStart:this.onTouchStart},
+				E(Text,{style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
 		}
 		
 //{...this._panResponder.panHandlers}

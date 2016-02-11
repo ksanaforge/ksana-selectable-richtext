@@ -42,6 +42,7 @@ var SelectableRichText=React.createClass({
 		this.setState({paraStart:-1,paraEnd:-1});
 	}
 	,trimSelection:function(para,start) {
+		if (this.state.paraStart===-1)return;
 		if (start) {
 			this.setState({paraStart:para});
 		} else {
@@ -58,11 +59,12 @@ var SelectableRichText=React.createClass({
 	}	
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text||"",idx=parseInt(row);
-			return E(View, {style:this.props.style
-			,onTouchStart:this.onTouchStart.bind(this,idx)
-			,onTouchEnd:this.onTouchEnd.bind(this,idx)},
+			return E(View, {style:this.props.style},
 				E(Paragraph, 
 				{key:idx, para:idx, text:text 
+				,onTouchStart:this.onTouchStart.bind(this,idx)
+				,onTouchEnd:this.onTouchEnd.bind(this,idx)
+				,onMarkupClick:this.props.onMarkupClick
 				,token:this.state.token
 				,typedef:this.props.typedef
 				,markups:this.getSentenceMarkup(idx)
