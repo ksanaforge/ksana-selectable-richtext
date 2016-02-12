@@ -25,11 +25,13 @@ var Paragraph=React.createClass({
 		this.props.eventEmitter&&this.props.eventEmitter.addListener('adjustSelection', this.adjustSelection);
 	}
 	,adjustSelection:function(n){
-		if (this.state.selStart===-1||this.state.selEnd===-1)return;
-		if (n>0 && this.state.selEnd+n<this.state.tokens.length) {
+		if (this.state.selStart===-1||this.state.selEnd===-1||n===0)return;
+
+		if (this.state.selStart===this.state.selEnd && this.state.selStart && n<0) {
+			this.setState({selStart:this.state.selStart-1,selEnd:this.state.selEnd-1});
+		} else if (this.state.selEnd+n<this.state.tokens.length && 
+			this.state.selEnd+n>=this.state.selStart) {
 			this.setState({selEnd:this.state.selEnd+n});
-		} else if (n<0&&this.state.selStart+n>0){
-			this.setState({selStart:this.state.selStart+n});
 		}
 	}
 	,getInitialState:function() {
