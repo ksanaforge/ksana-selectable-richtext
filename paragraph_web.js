@@ -23,8 +23,8 @@ var Paragraph=React.createClass({
 			this.setState(res);
 		}.bind(this));
 	}
-	,shouldComponentUpdate:function(nextProps){
-		if (nextProps.text===this.props.text || nextProps.text===this.state.text)return false;
+	,shouldComponentUpdate:function(nextProps,nextState){
+		if (nextProps.text===this.props.text && nextProps.text===nextState.text)return false;
 		return true;
 	}
 	,onTouchStart:function(e){
