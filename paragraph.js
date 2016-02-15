@@ -8,7 +8,15 @@ var {
 } =React;
 var E=React.createElement;
 var {tokenizer,isTextToken}=require("./tokenizer");
+/*
+  TODO , 
+  remove eventEmitter approach
 
+  selection passed in by props, allow multiple selection.
+
+  send token click event to parent component, 
+  let parent component controls the selection (allow multiple selections)
+*/
 var breakmarkup=require("./breakmarkup");
 var Paragraph=React.createClass({
 	propTypes:{
@@ -26,25 +34,18 @@ var Paragraph=React.createClass({
 	}
 	,adjustSelection:function(n){
 		if (this.state.selStart===-1||this.state.selEnd===-1||n===0)return;
-
+		//-1 move selStart to left for single token selection
 		if (this.state.selStart===this.state.selEnd && this.state.selStart && n<0) {
 			this.setState({selStart:this.state.selStart-1,selEnd:this.state.selEnd-1});
 		} else if (this.state.selEnd+n<this.state.tokens.length && 
-			this.state.selEnd+n>=this.state.selStart) {
+			this.state.selEnd+n>=this.state.selStart) { // resize selEnd
 			this.setState({selEnd:this.state.selEnd+n});
 		}
 	}
 	,getInitialState:function() {
-		var res={tokens:[]};
-		if (this.props.text) {
-				var res=this.breakTextByMarkup(this.props.text,this.props.markups,this.isParagraphSelected());	
-		}
+		var res=breakmarkup(this.props.tokenizer||tokenizer,this.props.text,this.props.markups,this.isParagraphSelected());
 
 		return {tokens:res.tokens,tokenOffsets:res.offsets,tokenMarkup:res.markups,selStart:-1,selEnd:-1,typedef:this.props.typedef||{}};
-	}
-	,breakTextByMarkup:function(text,markups,selectable) {
-		var tknz=this.props.tokenizer||tokenizer;
-		return breakmarkup(tknz,text,markups,selectable);
 	}
 	,selectToken:function(idx){
 		this.props.selectToken(idx);
@@ -58,7 +59,8 @@ var Paragraph=React.createClass({
 		}
 		var contentChanged=nextProps.markups!==this.props.markups || nextProps.text!==this.props.text;
 		if (selectedChanged||this.isParagraphSelected(nextProps) || contentChanged) {
-			var res=this.breakTextByMarkup(nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps));
+			var res=breakmarkup(nextProps.tokenizer||tokenizer,nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps))
+			//var res=this.breakTextByMarkup(nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps));
 			nextState.tokens=res.tokens||[];
 			nextState.tokenOffsets=res.offsets||[];
 			nextState.tokenMarkup=res.markups||[];
@@ -174,7 +176,7 @@ var Paragraph=React.createClass({
 		var tokenStyle=this.getTokenStyle(idx);
 		var tokenHandler=this.getTokenHandler(idx);
 
-		return E(Text,{onTouchStart:this.isParagraphSelected()?this.onTokenTouchStart.bind(this,idx):tokenHandler
+		return E(Text,{onLayout:this.onTokenLayout,onTouchStart:this.isParagraphSelected()?this.onTokenTouchStart.bind(this,idx):tokenHandler
 			,style:this.isTokenSelected(idx)?
 				[styles.selectedToken,this.props.selectedTextStyle].concat(tokenStyle):tokenStyle 
 				,ref:idx,key:idx},token);
@@ -185,10 +187,8 @@ var Paragraph=React.createClass({
 				E(Text,{style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
 		}
 		
-//{...this._panResponder.panHandlers}
 		return E(View,{style:{flex:1}},
-			E(Text,
-				{style:[styles.selectedParagraph,this.props.textStyle,this.props.selectedStyle]},
+			E(Text,	{style:[styles.selectedParagraph,this.props.textStyle,this.props.selectedStyle]},
 				this.state.tokens.map(this.renderToken)));
 	}
 });

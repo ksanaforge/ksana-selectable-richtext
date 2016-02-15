@@ -46,7 +46,7 @@ var _break=function(text,ms,me){
 
 	return {tokens,offsets,markups};
 }
-var makeSelectable=function(para,tokenizer){
+var shredding=function(para,tokenizer){
 	var tokens=[],offsets=[],markups=[];
 	for (var i=0;i<para.tokens.length;i+=1) {
 		var t=para.tokens[i];
@@ -65,14 +65,15 @@ var makeSelectable=function(para,tokenizer){
 	}
 	return {tokens,offsets,markups};
 }
-var breakmarkup=function(tokenizer,text,markups,selectable){
+var breakmarkup=function(tokenizer,text,markups,shred){
+	if (!text) return {tokens:[]};
 	if (!markups || Object.keys(markups).length==0) {
-		return selectable?tokenizer(text):{tokens:[text], offsets:[0],markups:[]};
+		return shred?tokenizer(text):{tokens:[text], offsets:[0],markups:[]};
 	} else {
 		var r=buildInvertedMarkup(markups);
 		var out= _break(text,r.markupstart,r.markupend);
-		if (!selectable)return out;
-		return makeSelectable(out,tokenizer);
+		if (!shred)return out;
+		return shredding(out,tokenizer);
 	}
 }
 module.exports=breakmarkup;
