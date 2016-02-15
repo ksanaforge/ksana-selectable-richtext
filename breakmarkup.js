@@ -21,17 +21,17 @@ var buildInvertedMarkup=function(markups){
 		if (!markupend[m.s+m.l]) markupend[m.s+m.l]=[];
 		markupend[m.s+m.l].push(mid);
 	}
-	return {markupstart,markupend};
+	return {markupstart:markupstart,markupend:markupend};
 }
 var _break=function(text,ms,me){
 	var M=new Set();
-	var tokens=[], offsets=[], markups=[], lasttext="", lastoffset=0;
+	var tokens=[], tokenOffsets=[], tokenMarkups=[], lasttext="", lastoffset=0;
 	for (var i=0;i<text.length;i+=1) {
 
 		if (i && (ms[i] || me[i])) { // markup changed
 			tokens.push(lasttext);
-			offsets.push(lastoffset);
-			markups.push(Array.from(M));
+			tokenOffsets.push(lastoffset);
+			tokenMarkups.push(Array.from(M));
 			lasttext="";
 			lastoffset=i;
 		}
@@ -41,34 +41,34 @@ var _break=function(text,ms,me){
 		lasttext+=text[i];
 	}
 	tokens.push(lasttext);
-	offsets.push(lastoffset);
-	markups.push(Array.from(M));
+	tokenOffsets.push(lastoffset);
+	tokenMarkups.push(Array.from(M));
 
-	return {tokens,offsets,markups};
+	return {tokens:tokens,tokenOffsets:tokenOffsets,tokenMarkups:tokenMarkups};
 }
 var shredding=function(para,tokenizer){
-	var tokens=[],offsets=[],markups=[];
+	var tokens=[],tokenOffsets=[],tokenMarkups=[];
 	for (var i=0;i<para.tokens.length;i+=1) {
 		var t=para.tokens[i];
 		var r=tokenizer(t);
 		if (r.tokens[0]===t) {
 			tokens.push(para.tokens[i]);
-			offsets.push(para.offsets[i]);
-			markups.push(para.markups[i]);
+			offsets.push(para.tokenOffsets[i]);
+			markups.push(para.tokenMarkups[i]);
 		} else {
 			for(var j=0;j<r.tokens.length;j+=1) {
 				tokens.push(r.tokens[j]);
-				offsets.push(para.offsets[i]+r.offsets[j]);
-				markups.push(para.markups[i]);
+				tokenOffsets.push(para.tokenOffsets[i]+r.tokenOffsets[j]);
+				tokenMarkups.push(para.tokenMarkups[i]);
 			}
 		}
 	}
-	return {tokens,offsets,markups};
+	return {tokens:tokens,offsets:offsets,markups:markups};
 }
 var breakmarkup=function(tokenizer,text,markups,shred){
-	if (!text) return {tokens:[]};
+	if (!text) return {tokens:[],tokenMarkups:[],tokenOffsets:[]};
 	if (!markups || Object.keys(markups).length==0) {
-		return shred?tokenizer(text):{tokens:[text], offsets:[0],markups:[]};
+		return shred?tokenizer(text):{tokens:[text], tokenMarkups:[0],tokenOffsets:[]};
 	} else {
 		var r=buildInvertedMarkup(markups);
 		var out= _break(text,r.markupstart,r.markupend);

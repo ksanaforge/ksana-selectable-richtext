@@ -1,18 +1,22 @@
-var React=require("react-native");
-var {
-  View,Text,StyleSheet,PropTypes
-} =React;
-var rowY={};
-var DeferListView=require("./deferlistview");
-var Paragraph=require("./paragraph");
-var E=React.createElement;
+var React,Paragraph,ListView,View;
 
-import EventEmitter from "react-native/Libraries/vendor/emitter/EventEmitter";
-//var EventEmitter=require("react-native/Libraries/Vendor/emitter/EventEmitter");
+try{
+	React=require("react-native");	
+	ListView=require("./deferlistview");
+	Paragraph=require("./paragraph");
+	View=View;
+} catch(e) {
+	React=require("react");
+	ListView=require("./deferlistview_web");
+	Paragraph=require("./paragraph_web");
+	View="div";
+}
+var E=React.createElement;
+var rowY={};
+
 
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
-		this.eventEmitter=new EventEmitter();
 		return {paraStart:-1,paraEnd:-1,token:null};
 	}
 	,getSelection:function(){
@@ -21,7 +25,6 @@ var SelectableRichText=React.createClass({
 	,selStart:-1
 	,selEnd:-1
 	,componentWillUnmount:function(){
-		this.eventEmitter.removeAllListeners();	
 	}
 	,onSelectionChanged:function(selStart,selEnd,lastStart,lastEnd) {
 		this.selStart=selStart;
@@ -77,17 +80,21 @@ var SelectableRichText=React.createClass({
 	}
 	,markLeft:function(){
 		if (this.state.paraStart===-1) return;
-		this.eventEmitter.emit('adjustSelection',-1);
+		//this.eventEmitter.emit('adjustSelection',-1);
 	}
 	,markRight:function(){
 		if (this.state.paraEnd===-1) return;
-		this.eventEmitter.emit('adjustSelection',1);
+		//this.eventEmitter.emit('adjustSelection',1);
+	}
+	,fetchText:function(row,cb){
+		if (this.props.rows[row].text) return false;
+		this.props.onFetchText(row,cb);
 	}
 	,renderRow:function(rowdata,row){
-		var text=rowdata.text||"",idx=parseInt(row);
-			return E(View, {style:this.props.style},
+		var text=rowdata.text,idx=parseInt(row);
+			return E(View, {style:this.props.style,key:idx},
 				E(Paragraph, 
-				{key:idx, para:idx, text:text 
+				{para:idx, text:text 
 				,onTouchStart:this.onTouchStart.bind(this,idx)
 				,onTouchEnd:this.onTouchEnd.bind(this,idx)
 				,onHyperlink:this.props.onHyperlink
@@ -103,18 +110,22 @@ var SelectableRichText=React.createClass({
 				,paraEnd:this.state.paraEnd
 				,trimSelection:this.trimSelection
 				,eventEmitter:this.eventEmitter
+				,fetchText:this.fetchText
 				,cancelSelection:this.cancelSelection}
 				)
 			);
 	}
 	,render:function(){
-		return <DeferListView ref="listview" {...this.props} visibleChanged={this.visibleChanged}
-		renderRow={this.renderRow} />
+		var props={};
+		for (var i in this.props)	props[i]=this.props[i];
+		props.ref="listview";
+		props.visibleChanged=this.visibleChanged;
+		props.renderRow=this.renderRow;
+
+		return E(ListView,props);
 	}
 });
 
 
 
-
-
-module.exports={SelectableRichText,DeferListView};
+module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView};

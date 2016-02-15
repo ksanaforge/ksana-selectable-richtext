@@ -8,6 +8,7 @@ var {
 } =React;
 var E=React.createElement;
 var {tokenizer,isTextToken}=require("./tokenizer");
+var {getTokens,getTokenStyle,getTokenHandler}=require("./tokens");
 /*
   TODO , 
   remove eventEmitter approach
@@ -43,10 +44,12 @@ var Paragraph=React.createClass({
 		}
 	}
 	,getInitialState:function() {
-		var res=breakmarkup(this.props.tokenizer||tokenizer,this.props.text,this.props.markups,this.isParagraphSelected());
-
-		return {tokens:res.tokens,tokenOffsets:res.offsets,tokenMarkup:res.markups,selStart:-1,selEnd:-1,typedef:this.props.typedef||{}};
-	}
+		var res=getTokens.call(this);
+		res.text=this.props.text;
+		res.typedef=this.props.typedef;
+		res.selStart=-1;
+		res.selEnd=-1;
+		return res;	}
 	,selectToken:function(idx){
 		this.props.selectToken(idx);
 	}
@@ -62,8 +65,8 @@ var Paragraph=React.createClass({
 			var res=breakmarkup(nextProps.tokenizer||tokenizer,nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps))
 			//var res=this.breakTextByMarkup(nextProps.text,nextProps.markups,this.isParagraphSelected(nextProps));
 			nextState.tokens=res.tokens||[];
-			nextState.tokenOffsets=res.offsets||[];
-			nextState.tokenMarkup=res.markups||[];
+			nextState.tokenOffsets=res.tokenOffsets||[];
+			nextState.tokenMarkup=res.tokenMarkups||[];
 		}
 		return contentChanged||selectedChanged||this.isParagraphSelected(nextProps) || nextState.selStart!==this.state.selStart||nextState.selEnd!==this.state.selEnd;
 	}
@@ -132,39 +135,6 @@ var Paragraph=React.createClass({
 
 		return (n>=start)&&(n<=end);
 	}
-	,getTokenStyle:function(n) {
-		var M=this.state.tokenMarkup[n];
-		if (!M)return null;
-
-		var markups=this.props.markups;
-		var out={},typedef=this.state.typedef;
-		M.forEach(function(m,idx){
-			if (!markups[m])return;
-			var type=markups[m].type;
-			if (typedef[type] &&typedef[type].style ) {
-				out=Object.assign(out,typedef[type].style);
-			}
-		});
-
-		return out;
-	}
-	,tokenHandler:function(n,evt){
-		this.hyperlink_clicked=true; //cancel bubbling to onTouchStart
-		var M=this.state.tokenMarkup[n];
-		this.props.onHyperlink&&this.props.onHyperlink(this.props.para,M);
-		//TODO highlight hyperlink
-	}
-	,getTokenHandler:function(n) {
-		var M=this.state.tokenMarkup[n];
-		if (!M || !Object.keys(M).length)return null;
-		var markups=this.props.markups;
-		var out={},typedef=this.state.typedef;
-
-		if (typedef[ markups[M[0]].type]) {
-			return this.tokenHandler.bind(this,n);
-		} 
-		return null; //onTouchStart
-	}
 	,onTouchStart:function(){
 		if (this.hyperlink_clicked) {
 			this.hyperlink_clicked=false;
@@ -173,8 +143,8 @@ var Paragraph=React.createClass({
 		}
 	}
 	,renderToken:function(token,idx){
-		var tokenStyle=this.getTokenStyle(idx);
-		var tokenHandler=this.getTokenHandler(idx);
+		var tokenStyle=getTokenStyle.call(this,idx);
+		var tokenHandler=getTokenHandler.call(this,idx);
 
 		return E(Text,{onLayout:this.onTokenLayout,onTouchStart:this.isParagraphSelected()?this.onTokenTouchStart.bind(this,idx):tokenHandler
 			,style:this.isTokenSelected(idx)?
