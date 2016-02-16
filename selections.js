@@ -35,16 +35,24 @@ var Selections=function(opts) {
     selections={};
   }
 
-  clear=function(rowid) {
+  var clear=function(rowid) {
     delete selections[rowid];
   }
+
+  var clearEmpty=function() {
+    for (var i in selections) {
+      if (selections[i].length===0) delete selections[i];
+    }
+  }
   var set=function(rowid,sel) {
-    if (sel[1]==0) return false;
-    selections[rowid]=[JSON.parse(JSON.stringify(sel))];
+    if (!sel)return false;
+    var newsel=JSON.parse(JSON.stringify(sel));
+    if (newsel.length) selections[rowid]=[newsel];
+    else selections[rowid]=[];
     return true;
   }
 
-  return {getAll:getAll,clear:clear,get:get,set:set};
+  return {getAll:getAll,clear:clear,get:get,set:set,clearEmpty:clearEmpty};
 }
 
 

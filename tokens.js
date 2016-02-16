@@ -44,17 +44,17 @@ var getTokenStyle=function(n) {
 	return out;
 }
 
-var getTokens=function(props,text){
-		props=props||this.props;
-		text=text||props.text;
-		var markers={};
-		for(var i in props.markups) {
-			markers[i]=props.markups[i];
-		}
-		if (props.ranges) for (var j=0;j<props.ranges.length;j++) {
-			markers[String.fromCharCode(1)+j]={s:props.ranges[j][0],l:props.ranges[j][1],type:"selection"};
-		}
-		return breakmarkup(props.tokenizer||tokenizer,text,markers);
+var getTokens=function(props,text,shredd){
+	props=props||this.props;
+	text=text||props.text;
+	var markers={};
+	for(var i in props.markups) {
+		markers[i]=props.markups[i];
+	}
+	if (props.ranges) for (var j=0;j<props.ranges.length;j++) {
+		markers[String.fromCharCode(1)+j]={s:props.ranges[j][0],l:props.ranges[j][1],type:"selection"};
+	}
+	return breakmarkup(props.tokenizer||tokenizer,text,markers,shredd);
 }
 
 

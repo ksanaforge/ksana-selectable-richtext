@@ -1,10 +1,11 @@
-var React,Paragraph,ListView,View;
+var React,Paragraph,ListView,View,reactNative=false;
 
 try{
 	React=require("react-native");	
 	ListView=require("./deferlistview");
 	Paragraph=require("./paragraph");
-	View=View;
+	View=React.View;
+	reactNative=true;
 } catch(e) {
 	React=require("react");
 	ListView=require("./deferlistview_web");
@@ -12,15 +13,26 @@ try{
 	View="div";
 }
 var E=React.createElement;
+var PT=React.PropTypes;
 var rowY={};
 
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
 		var typedef=JSON.parse(JSON.stringify(this.props.typedef));
 		if (!typedef.selection) {
-			typedef.selection={backgroundColor:"highlight"};
+			typedef.selection=styles.selected;
 		}
 		return {typedef:typedef};
+	}
+	,propTypes:{
+		rows:PT.array.isRequired 
+        ,selections:PT.object
+        ,markups:PT.object
+		,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
+		,typedef:PT.object
+		,onHyperlink:PT.func
+		,onFetchText:PT.func
+		,onSelection:PT.func
 	}
 	,onNativeSelection:function(rowid,sel) {
 		this.props.onSelection(rowid,sel);
@@ -35,16 +47,7 @@ var SelectableRichText=React.createClass({
 		*/
 	}
 	,onTouchStart:function(n,evt){
-		/*
-		var touches=evt.nativeEvent.touches;
-		if (touches.length===1) {
-			if (this.state.paraStart===-1) {
-				this.setState({paraStart:n,paraEnd:n});
-			} else if (!this.isSelected(n)){
-				this.setState({paraStart:-1,paraEnd:-1});
-			}
-		}	
-		*/
+		this.props.onSelection(n,[]);
 	}
 	,visibleChanged:function(start,end){
 		if (this.state.paraStart>end || start>this.state.paraEnd) {
@@ -58,24 +61,22 @@ var SelectableRichText=React.createClass({
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text,idx=parseInt(row);
 		var ranges=this.props.selections[row];
-			return E(View, {style:this.props.style,key:idx},
-				E(Paragraph, 
-				{para:idx, text:text 
-				,onTouchStart:this.onTouchStart.bind(this,idx)
-				,onTouchEnd:this.onTouchEnd.bind(this,idx)
+		var params={para:idx, text:text 
 				,onHyperlink:this.props.onHyperlink
 				,ranges:ranges
 				,onNativeSelection:this.onNativeSelection
-				,token:this.state.token
 				,typedef:this.state.typedef
 				,markups:this.props.markups[row]
-				,selectedStyle:this.props.selectedStyle
 				,textStyle:this.props.textStyle
-				,selectedTextStyle:this.props.selectedTextStyle
 				,selectToken:this.selectToken
 				,fetchText:this.fetchText}
-				)
-			);
+		if (reactNative) {
+			params.onTouchStart=this.onTouchStart.bind(this,idx);
+			params.onTouchEnd=this.onTouchEnd.bind(this,idx);
+		}
+		
+		return E(View, {style:this.props.style,key:idx}, E(Paragraph, params)
+		);
 	}
 	,render:function(){
 		var props={};
@@ -87,5 +88,7 @@ var SelectableRichText=React.createClass({
 		return E(ListView,props);
 	}
 });
-
+var styles={
+	selected:{backgroundColor:"rgb(96,176,255)"}
+}
 module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView,Selections:require("./selections")};

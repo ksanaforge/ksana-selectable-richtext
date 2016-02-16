@@ -53,8 +53,8 @@ var shredding=function(para,tokenizer){
 		var r=tokenizer(t);
 		if (r.tokens[0]===t) {
 			tokens.push(para.tokens[i]);
-			offsets.push(para.tokenOffsets[i]);
-			markups.push(para.tokenMarkups[i]);
+			tokenOffsets.push(para.tokenOffsets[i]);
+			tokenMarkups.push(para.tokenMarkups[i]);
 		} else {
 			for(var j=0;j<r.tokens.length;j+=1) {
 				tokens.push(r.tokens[j]);
@@ -63,7 +63,7 @@ var shredding=function(para,tokenizer){
 			}
 		}
 	}
-	return {tokens:tokens,offsets:offsets,markups:markups};
+	return {tokens:tokens,tokenOffsets:tokenOffsets,tokenMarkups:tokenMarkups};
 }
 var breakmarkup=function(tokenizer,text,markups,shred){
 	if (!text) return {tokens:[],tokenMarkups:[],tokenOffsets:[]};
