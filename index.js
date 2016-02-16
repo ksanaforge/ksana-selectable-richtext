@@ -17,7 +17,11 @@ var rowY={};
 
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
-		return {paraStart:-1,paraEnd:-1,token:null};
+		var typedef=JSON.parse(JSON.stringify(this.props.typedef));
+		if (!typedef.selection) {
+			typedef.selection={backgroundColor:"highlight"};
+		}
+		return {paraStart:-1,paraEnd:-1,token:null,typedef:typedef};
 	}
 	,getSelection:function(){
 		return {paraStart:this.state.paraStart,paraEnd:this.state.paraEnd,selStart:this.selStart,selEnd:this.selEnd};
@@ -92,15 +96,17 @@ var SelectableRichText=React.createClass({
 	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text,idx=parseInt(row);
+		var ranges=this.props.selections[row];
 			return E(View, {style:this.props.style,key:idx},
 				E(Paragraph, 
 				{para:idx, text:text 
 				,onTouchStart:this.onTouchStart.bind(this,idx)
 				,onTouchEnd:this.onTouchEnd.bind(this,idx)
 				,onHyperlink:this.props.onHyperlink
+				,ranges:ranges
 				,onSelectionChanged:this.onSelectionChanged
 				,token:this.state.token
-				,typedef:this.props.typedef
+				,typedef:this.state.typedef
 				,markups:this.getSentenceMarkup(idx)
 				,selectedStyle:this.props.selectedStyle
 				,textStyle:this.props.textStyle
@@ -128,4 +134,4 @@ var SelectableRichText=React.createClass({
 
 
 
-module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView};
+module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView,Selections:require("./selections")};

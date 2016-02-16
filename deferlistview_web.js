@@ -30,11 +30,12 @@ var DeferListView=React.createClass({
 	,componentDidUpdate:function() {
 		setTimeout(function(){
 			for (var i=0;i<this.inViewport.length;i+=1) {
-				//if (this.inViewport[i]) {
-					this.rowHeights[i]=this.refs["c"+i].getBoundingClientRect().height;
-				//}
+				if (this.inViewport[i]) {
+					var c=this.refs["c"+i];
+					if(c) this.rowHeights[i]=c.getBoundingClientRect().height;
+				}
 			}
-		}.bind(this),300); //wait until rows updated
+		}.bind(this),300); //wait until rows updated, hacky solution
 	}
 	,renderRow:function(rowdata,idx) {
 		return E("div",{ref:'c'+idx,key:idx},
@@ -71,7 +72,7 @@ var DeferListView=React.createClass({
 		var top=e.target.scrollTop;
 		this.viewporttimer=setTimeout(function(){
 			this.setViewPort(top);
-		}.bind(this),200);		
+		}.bind(this),100);		
 	}
 	,render:function(){
 		return E("div",{ref:"container",onScroll:this.onScroll,style:{overflowY:"scroll",height:this.props.height||"500"}},

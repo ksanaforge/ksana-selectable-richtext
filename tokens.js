@@ -14,9 +14,11 @@ var getTokenHandler=function(n) {
 	var M=this.state.tokenMarkups[n];
 	if (!M || !Object.keys(M).length)return null;
 	var markups=this.props.markups;
-	var out={},typedef=this.state.typedef;
+	if (!markups) return null; //range
 
-	if (typedef[ markups[M[0]].type]) {
+	var out={},typedef=this.state.typedef;
+	var mid=markups[M[0]];
+	if (typedef[mid] && typedef[mid].type) {
 		return tokenHandler.bind(this,n);
 	} 
 	return null; //onTouchStart
@@ -25,10 +27,14 @@ var getTokenStyle=function(n) {
 	var M=this.state.tokenMarkups[n];
 	if (!M)return null;
 
-	var markups=this.props.markups;
 	var out={},typedef=this.state.typedef;
+	var markups=this.props.markups;
+	if (!markups) { //is ranges
+		return (M&&M.length)?typedef.selection:null;
+	}
+
 	M.forEach(function(m,idx){
-		if (!markups[m])return;
+		if (!markups[m])return out=Object.assign(out,typedef.selection);
 		var type=markups[m].type;
 		if (typedef[type] &&typedef[type].style ) {
 			out=Object.assign(out,typedef[type].style);
@@ -41,7 +47,14 @@ var getTokenStyle=function(n) {
 var getTokens=function(props,text){
 		props=props||this.props;
 		text=text||props.text;
-		return breakmarkup(props.tokenizer||tokenizer,text,props.markups);
+		var markers={};
+		for(var i in props.markups) {
+			markers[i]=props.markups[i];
+		}
+		if (props.ranges) for (var j=0;j<props.ranges.length;j++) {
+			markers[String.fromCharCode(1)+j]={s:props.ranges[j][0],l:props.ranges[j][1],type:"selection"};
+		}
+		return breakmarkup(props.tokenizer||tokenizer,text,markers);
 }
 
 
