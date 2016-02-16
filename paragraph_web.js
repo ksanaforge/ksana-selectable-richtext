@@ -1,19 +1,18 @@
 var React=require("react");
+var ReactDOM=require("react-dom");
 var E=React.createElement;
 
 var isTextToken=require("./tokenizer").isTextToken;
 var getTokens=require("./tokens").getTokens;
 var getTokenStyle=require("./tokens").getTokenStyle;
 var getTokenHandler=require("./tokens").getTokenHandler;
-
+var selection=require("./selection_web");
 
 var Paragraph=React.createClass({
 	getInitialState:function(){
 		var res=getTokens.call(this);
 		res.text=this.props.text;
 		res.typedef=this.props.typedef;
-		res.selStart=-1;
-		res.selEnd=-1;
 		return res;
 	}
 	,componentDidMount:function(){
@@ -24,8 +23,17 @@ var Paragraph=React.createClass({
 		}.bind(this));
 	}
 	,shouldComponentUpdate:function(nextProps,nextState){
-		if (nextProps.text===this.props.text && nextProps.text===nextState.text)return false;
-		return true;
+		var changed=( nextProps.text!==nextState.text
+			||nextProps.markups!==this.props.markups||nextProps.ranges!==this.props.ranges);
+
+		if (changed && nextProps.text) {
+			var res=getTokens.call(this,nextProps);
+			res.text=nextProps.text;
+			for (var i in res) {
+				nextState[i]=res[i];
+			}
+		}
+		return changed;
 	}
 	,onTouchStart:function(e){
 		console.log('touchstart',e)
@@ -34,16 +42,28 @@ var Paragraph=React.createClass({
 		var tokenStyle=getTokenStyle.call(this,idx);
 		var tokenHandler=getTokenHandler.call(this,idx);
 		
-		return E("span",{style:tokenStyle,ref:idx,key:idx},token);
+		return E("span",{"data-start":this.state.tokenOffsets[idx]||0
+			,style:tokenStyle,ref:idx,key:idx},token);
+	}
+	,onMouseUp:function(e) {
+		if (e.target.nodeName!="SPAN") return;
+		if (e.button!==0)return;
+		var sel=selection.getSelection( {domnode:ReactDOM.findDOMNode(this), text:this.state.text});
+		this.props.onNativeSelection&&this.props.onNativeSelection(this.props.para,[sel.s,sel.l]);
+	}
+	,isSelected:function(){
+		return (this.props.ranges &&this.props.ranges.length);
 	}
 	,render:function(){
-		return E("span",{key:1,onTouchStart:this.onTouchStart}
+		var style=null;
+		if (this.isSelected()) style=styles.selectedParagraph;
+		return E("span",{key:"0",style:style,onMouseUp:this.onMouseUp}
 			,this.state.tokens.map(this.renderToken));
 	}
 });
 
 var styles={
-	selectedParagraph:{backgroundColor:'rgb(212,232,255'},
+	selectedParagraph:{backgroundColor:'rgb(242,248,255)'},
 	selectedToken:{backgroundColor:'rgb(96,176,255)'}
 };
 

@@ -14,34 +14,28 @@ try{
 var E=React.createElement;
 var rowY={};
 
-
 var SelectableRichText=React.createClass({
 	getInitialState:function(){
 		var typedef=JSON.parse(JSON.stringify(this.props.typedef));
 		if (!typedef.selection) {
 			typedef.selection={backgroundColor:"highlight"};
 		}
-		return {paraStart:-1,paraEnd:-1,token:null,typedef:typedef};
+		return {typedef:typedef};
 	}
-	,getSelection:function(){
-		return {paraStart:this.state.paraStart,paraEnd:this.state.paraEnd,selStart:this.selStart,selEnd:this.selEnd};
-	}	
-	,selStart:-1
-	,selEnd:-1
-	,componentWillUnmount:function(){
-	}
-	,onSelectionChanged:function(selStart,selEnd,lastStart,lastEnd) {
-		this.selStart=selStart;
-		this.selEnd=selEnd;
+	,onNativeSelection:function(rowid,sel) {
+		this.props.onSelection(rowid,sel);
 	}
 	,onTouchEnd:function(n,evt) {
+		/*
 		var touches=evt.nativeEvent.touches;
 		var cTouches=evt.nativeEvent.changedTouches;
 		if (cTouches.length===1 && touches.length===1){ //another finger is pressing
 			this.setState({paraEnd:n});
 		}
+		*/
 	}
 	,onTouchStart:function(n,evt){
+		/*
 		var touches=evt.nativeEvent.touches;
 		if (touches.length===1) {
 			if (this.state.paraStart===-1) {
@@ -50,45 +44,12 @@ var SelectableRichText=React.createClass({
 				this.setState({paraStart:-1,paraEnd:-1});
 			}
 		}	
-	}
-	,isSelected:function(n){
-		var start=this.state.paraStart;
-		var end=this.state.paraEnd;
-		if (end<start &&end>-1) {
-			var t=end;
-			end=start;
-			start=t;
-		}
-		return (n>=start)&&(n<=end);
-	}
-	,cancelSelection:function(){
-		this.selStart=-1;
-		this.selEnd=-1;
-		this.setState({paraStart:-1,paraEnd:-1});
-	}
-	,trimSelection:function(para,start) {
-		if (this.state.paraStart===-1)return;
-		if (start) {
-			this.setState({paraStart:para});
-		} else {
-			this.setState({paraEnd:para});
-		}
+		*/
 	}
 	,visibleChanged:function(start,end){
 		if (this.state.paraStart>end || start>this.state.paraEnd) {
 			this.cancelSelection();
 		}
-	}
-	,getSentenceMarkup:function(sid){
-		return this.props.markups[sid];
-	}
-	,markLeft:function(){
-		if (this.state.paraStart===-1) return;
-		//this.eventEmitter.emit('adjustSelection',-1);
-	}
-	,markRight:function(){
-		if (this.state.paraEnd===-1) return;
-		//this.eventEmitter.emit('adjustSelection',1);
 	}
 	,fetchText:function(row,cb){
 		if (this.props.rows[row].text) return false;
@@ -104,20 +65,15 @@ var SelectableRichText=React.createClass({
 				,onTouchEnd:this.onTouchEnd.bind(this,idx)
 				,onHyperlink:this.props.onHyperlink
 				,ranges:ranges
-				,onSelectionChanged:this.onSelectionChanged
+				,onNativeSelection:this.onNativeSelection
 				,token:this.state.token
 				,typedef:this.state.typedef
-				,markups:this.getSentenceMarkup(idx)
+				,markups:this.props.markups[row]
 				,selectedStyle:this.props.selectedStyle
 				,textStyle:this.props.textStyle
 				,selectedTextStyle:this.props.selectedTextStyle
 				,selectToken:this.selectToken
-				,paraStart:this.state.paraStart
-				,paraEnd:this.state.paraEnd
-				,trimSelection:this.trimSelection
-				,eventEmitter:this.eventEmitter
-				,fetchText:this.fetchText
-				,cancelSelection:this.cancelSelection}
+				,fetchText:this.fetchText}
 				)
 			);
 	}
@@ -131,7 +87,5 @@ var SelectableRichText=React.createClass({
 		return E(ListView,props);
 	}
 });
-
-
 
 module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView,Selections:require("./selections")};
