@@ -68,7 +68,13 @@ var shredding=function(para,tokenizer){
 var breakmarkup=function(tokenizer,text,markups,shred){
 	if (!text) return {tokens:[],tokenMarkups:[],tokenOffsets:[]};
 	if (!markups || Object.keys(markups).length==0) {
-		return shred?tokenizer(text):{tokens:[text], tokenMarkups:[0],tokenOffsets:[]};
+		if (shred) {
+			var res=tokenizer(text);
+			res.tokenMarkups=[];
+			return res;
+		} else {
+			return {tokens:[text], tokenMarkups:[0],tokenOffsets:[]};
+		}
 	} else {
 		var r=buildInvertedMarkup(markups);
 		var out= _break(text,r.markupstart,r.markupend);
