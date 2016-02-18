@@ -45,16 +45,22 @@ var Selections=function(opts) {
     }
   }
   var set=function(rowid,sel) {
-    if (!sel)return false;
-    var newsel=JSON.parse(JSON.stringify(sel));
-    if (newsel.length) {
-      if (selections[rowid].length && selections[rowid][0][0]===newsel[0]) {
-        selections[rowid]=[];
+  
+    if (sel) {
+      var newsel=JSON.parse(JSON.stringify(sel));
+      if (newsel.length) {
+        if (selections[rowid].length && selections[rowid][0][0]===newsel[0]) {
+          selections[rowid]=[];
+        } else {
+          selections[rowid]=[newsel];
+        }
       } else {
-        selections[rowid]=[newsel];
-      }
+        selections[rowid]=sel;
+      } 
+    } else {
+      delete selections[rowid];
     }
-    else selections[rowid]=[];
+
     return true;
   }
 

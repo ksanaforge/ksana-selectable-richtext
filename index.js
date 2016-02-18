@@ -48,6 +48,7 @@ var SelectableRichText=React.createClass({
 	}
 	,onTouchStart:function(n,evt){
 		if (!this.props.selections[n]) this.props.onSelection(n,[]); //select this paragraph if not selected
+		else if (!this.props.selections[n].length) this.props.onSelection(n,null); //unselect this paragraph
 	}
 	,visibleChanged:function(start,end){
 		if (this.state.paraStart>end || start>this.state.paraEnd) {
