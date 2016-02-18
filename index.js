@@ -1,14 +1,14 @@
-var React,Paragraph,ListView,View,reactNative=false;
+var React,Paragraph,DeferListView, reactNative=false;
 
 try{
-	React=require("react-native");	
-	ListView=require("./deferlistview");
-	Paragraph=require("./paragraph");
-	View=React.View;
+	React=require("react-native");
 	reactNative=true;
+	View=React.View;
+	DeferListView=require("./deferlistview");
+	Paragraph=require("./paragraph");
 } catch(e) {
 	React=require("react");
-	ListView=require("./deferlistview_web");
+	DeferListView=require("./deferlistview_web");
 	Paragraph=require("./paragraph_web");
 	View="div";
 }
@@ -85,10 +85,10 @@ var SelectableRichText=React.createClass({
 		props.visibleChanged=this.visibleChanged;
 		props.renderRow=this.renderRow;
 
-		return E(ListView,props);
+		return E(DeferListView,props);
 	}
 });
 var styles={
 	selected:{backgroundColor:"rgb(96,176,255)"}
 }
-module.exports={SelectableRichText:SelectableRichText,DeferListView:ListView,Selections:require("./selections")};
+module.exports={SelectableRichText:SelectableRichText,DeferListView:DeferListView,Selections:require("./selections")};

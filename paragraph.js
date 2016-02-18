@@ -44,7 +44,7 @@ var Paragraph=React.createClass({
 	}
 });
 var styles=StyleSheet.create({
-	selectedParagraph:{backgroundColor:'rgb(212,232,255'},
+	selectedParagraph:{backgroundColor:'rgb(212,232,255)'},
 	selectedToken:{backgroundColor:'rgb(96,176,255)'}
 })
 module.exports=Paragraph;

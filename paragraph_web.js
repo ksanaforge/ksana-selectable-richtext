@@ -1,6 +1,5 @@
 var React=require("react");
-var reactdom="react-dom"; //to cheat react native packager
-var ReactDOM=require(reactdom);
+var ReactDOM=require("react-dom");
 var E=React.createElement;
 
 var getTokenStyle=require("./tokens").getTokenStyle;
