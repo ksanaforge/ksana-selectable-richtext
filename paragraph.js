@@ -7,13 +7,13 @@ var {getTokenStyle,getTokenHandler,propTypes}=require("./tokens");
 var Paragraph=React.createClass({
 	mixins:[require("./paragraph_mixin")]
 	,onTokenTouchStart:function(n,evt){
-		//console.log("touch start",n)	
-	}
-	,onTokenTouchEnd:function(n,evt){
 		var start=this.state.tokenOffsets[n];
 		if (!start)return;
 		var len=1;
 		this.props.onNativeSelection&&this.props.onNativeSelection(this.props.para,[start,len]);
+	}
+	,onTokenTouchEnd:function(n,evt){
+
 	}
 	,onTouchStart:function(){
 
