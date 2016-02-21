@@ -4,7 +4,7 @@
   click on space or unclickable token to select a paragraph
   select another paragraph, paragraph without selection will be unselect
 
-  use different color for odd and even selection, to differentiate adjation selection.
+  use different color for odd and even selection, to differentiate adjacent selection.
   cross paragraph selection is break into multiple selection.
 
   selection:
@@ -45,7 +45,6 @@ var Selections=function(opts) {
     }
   }
   var set=function(rowid,sel) {
-  
     if (sel) {
       var newsel=JSON.parse(JSON.stringify(sel));
       if (newsel.length) {
@@ -55,12 +54,11 @@ var Selections=function(opts) {
           selections[rowid]=[newsel];
         }
       } else {
-        selections[rowid]=sel;
+        selections[rowid]=newsel;
       } 
     } else {
       delete selections[rowid];
     }
-
     return true;
   }
 
