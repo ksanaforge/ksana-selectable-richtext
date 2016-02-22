@@ -1,5 +1,5 @@
 var React=require("react-native");
-var {View,Text,StyleSheet,PropTypes} = React;
+var {View,Text,StyleSheet,PropTypes,TouchableHighlight} = React;
 var E=React.createElement;
 
 var {getTokenStyle,getTokenHandler,propTypes}=require("./tokens");
@@ -16,7 +16,6 @@ var Paragraph=React.createClass({
 
 	}
 	,onTouchStart:function(){
-
 		if (this.hyperlink_clicked) {
 			this.hyperlink_clicked=false;
 		} else {
@@ -28,8 +27,8 @@ var Paragraph=React.createClass({
 		var tokenHandler=getTokenHandler.call(this,idx);
 
 		return E(Text,{onTouchStart:this.isSelected()?this.onTokenTouchStart.bind(this,idx):tokenHandler
-			,onTouchEnd:this.isSelected()?this.onTokenTouchEnd.bind(this,idx):null
-			,style:tokenStyle,ref:idx,key:idx},token);
+		,onTouchEnd:this.isSelected()?this.onTokenTouchEnd.bind(this,idx):null
+		,style:tokenStyle,ref:idx,key:idx},token);
 	}
 	,render:function(){
 

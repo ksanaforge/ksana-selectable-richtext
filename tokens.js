@@ -18,7 +18,7 @@ var getTokenHandler=function(n) {
 
 	var out={},typedef=this.state.typedef;
 	var mid=markups[M[0]];
-	if (typedef[mid] && typedef[mid].type) {
+	if (mid && typedef[mid.type]) {
 		return tokenHandler.bind(this,n);
 	} 
 	return null; //onTouchStart
