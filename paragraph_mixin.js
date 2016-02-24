@@ -26,28 +26,27 @@ module.exports={
 	}
 	,componentDidMount:function(){
 		this.props.fetchText(this.props.para,function(err,text,row){
-			var shredd=this.isSelected()&&reactNative;
+			var shredd=this.props.selectable&&reactNative;
 			var res=getTokens.call(this,this.props,text,shredd);
 			res.text=text;
 			this.setState(res);
 		}.bind(this));
 	}
 	,shouldComponentUpdate:function(nextProps,nextState){
-		var changed=( nextProps.text!==nextState.text
-			||nextProps.markups!==this.props.markups||nextProps.ranges!==this.props.ranges);
+		var selectableChange = nextProps.selectable!==this.props.selectable;
+		var selectingChange = nextProps.selectable && (nextProps.selStart!==this.props.selStart||nextProps.selLength!==this.props.selLength);
 
-		if (changed && nextProps.text) {
-			var shredd=this.isSelected(nextProps)&&reactNative;
+		var changed= selectingChange || selectableChange || nextProps.text!==nextState.text||nextProps.markups!==this.props.markups||nextProps.ranges!==this.props.ranges;
+
+
+		if ( changed && nextProps.text) {
+			var shredd=nextProps.selectable&&reactNative;
 			var res=getTokens.call(this,nextProps,nextProps.text,shredd);
 			res.text=nextProps.text;
 			for (var i in res) {
 				nextState[i]=res[i];
 			}
 		}
-		return changed;
-	}
-	,isSelected:function(props){
-		props=props||this.props;
-		return (props.ranges);
+		return changed ;
 	}
 };

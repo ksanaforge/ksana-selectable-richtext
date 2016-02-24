@@ -23,23 +23,51 @@ var getTokenHandler=function(n) {
 	} 
 	return null; //onTouchStart
 }
+var selcount=0,lastM;
+var repaint=function(){
+	selcount=0;
+}
 var getTokenStyle=function(n) {
-	var M=this.state.tokenMarkups[n];
+	var M=this.state.tokenMarkups[n],type;
 	if (!M)return null;
-
 	var out={},typedef=this.state.typedef;
+
+	var applySelectingStyle=function(){
+		if (this.props.selectable && n>=this.props.selStart && n<this.props.selStart+this.props.selLength) {
+			out=Object.assign(out,styles.selecting);
+		}
+	}
 	var markups=this.props.markups;
 	if (!markups) { //is ranges
-		return (M&&M.length)?typedef.selection:null;
+		if (M&&M.length) {
+			if (M[0]!==lastM) selcount++;
+
+			type=(selcount%2)?"selection":"selection_odd";
+			
+			lastM=M[0];
+			out=Object.assign(out,typedef[type]);
+			applySelectingStyle.call(this);
+			return out;
+		}
+		applySelectingStyle.call(this);
+		return out;
 	}
 
 	M.forEach(function(m,idx){
-		if (!markups[m])return out=Object.assign(out,typedef.selection);
-		var type=markups[m].type;
-		if (typedef[type] &&typedef[type].style ) {
-			out=Object.assign(out,typedef[type].style);
+		if (!markups[m]) {
+			if (M[0]!==lastM) selcount++;
+			type=(selcount%2)?"selection":"selection_odd";
+			lastM=M[0];
+			out=Object.assign(out,typedef[type]);
+		} else {
+			type=markups[m].type;
+			if (typedef[type] &&typedef[type].style ) {
+				out=Object.assign(out,typedef[type].style);
+			}
 		}
 	});
+
+	applySelectingStyle.call(this);
 
 	return out;
 }
@@ -54,10 +82,15 @@ var getTokens=function(props,text,shredd){
 	if (props.ranges) for (var j=0;j<props.ranges.length;j++) {
 		markers[String.fromCharCode(1)+j]={s:props.ranges[j][0],l:props.ranges[j][1],type:"selection"};
 	}
+	if (props.selectable && props.selStart>-1 && props.selLength) {
+		markers[String.fromCharCode(1)+"sel"]={s:props.selStart,l:props.selLength,type:"selecting"};
+	}
 	return breakmarkup(props.tokenizer||tokenizer,text,markers,shredd);
 }
 
-
+var styles={
+	selecting:{backgroundColor:"rgb(255,176,176)"}
+}
 module.exports={getTokenStyle:getTokenStyle,
-	tokenHandler:tokenHandler,
+	tokenHandler:tokenHandler,repaint:repaint,
 	getTokenHandler:getTokenHandler,getTokens:getTokens}
