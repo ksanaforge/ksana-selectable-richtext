@@ -15,9 +15,8 @@ var E=React.createElement;
 var DeferListView=React.createClass({
 	propTypes:{
 		rows:PropTypes.array.isRequired, 
-		onFetchText:PropTypes.func,
 		renderRow:PropTypes.func,
-		visibleChanged:PropTypes.func,
+		onViewportChanged:PropTypes.func,
 		style:PropTypes.object
 	}
 	,rowY:{}
@@ -72,7 +71,7 @@ var DeferListView=React.createClass({
 			loaded[retrow]=data;
 			setTimeout(function(){
 				this.updateText(loaded);
-			}.bind(this),100);
+			}.bind(this),200);
 			
 		}.bind(this));
 		taskqueue.shift()(0,{empty:true});
@@ -80,6 +79,7 @@ var DeferListView=React.createClass({
 	,updateText:function(loaded){
 		var rows=this.getRows(loaded);
 		var ds=this.state.dataSource.cloneWithRows(rows);
+		
 		this.setState({dataSource:ds,rows:rows},function(){
 			if (this.scrollingTo) {
 				setTimeout(function(){
@@ -103,7 +103,7 @@ var DeferListView=React.createClass({
 
 		clearTimeout(this.visibletimer)
 		this.visibletimer=setTimeout(function(){
-			this.props.visibleChanged&&this.props.visibleChanged(visibles[0],visibles[visibles.length-1]);
+			this.props.onViewportChanged&&this.props.onViewportChanged(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
 	}
 	,onRowLayout:function(rowid,evt){

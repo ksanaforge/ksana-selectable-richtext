@@ -25,7 +25,23 @@ var SelectableRichText=React.createClass({
 		if (!typedef.selection_odd) {
 			typedef.selection_odd=styles.selection_odd;
 		}
-		return {typedef:typedef,popupX:0,popupY:0,showpopup:false,selStart:-1,selLength:0};
+		return {typedef:typedef,popupX:0,popupY:0,showpopup:false,
+				selectingParagraph:-1,selStart:-1,selLength:0};
+	}
+	,contextTypes:{
+		store:React.PropTypes.object
+	}
+	,componentDidMount:function(){
+		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
+	}
+	,componentWillUnmount:function(){
+		this.context.store.unlistenAll(this);
+	}
+	,selLengthPlusOne:function(){
+		var text=this.props.rows[this.state.selectingParagraph];
+		if (this.state.selLength+1>=text.length)return;
+		//TODO, English Token and Surrogate
+		this.setState({selLength:this.state.selLength+1})
 	}
 	,hidePopup:function(){
 		this.setState({showpopup:false});
@@ -48,14 +64,8 @@ var SelectableRichText=React.createClass({
 		var ne=evt.nativeEvent;
 		this.setState({selStart:n,selLength:1,popupX:ne.pageX,popupY:ne.pageY-22,showpopup:true});
 	}
+
 	,onTouchEnd:function(n,evt) {
-		/*
-		var touches=evt.nativeEvent.touches;
-		var cTouches=evt.nativeEvent.changedTouches;
-		if (cTouches.length===1 && touches.length===1){ //another finger is pressing
-			this.setState({paraEnd:n});
-		}
-		*/
 		var showpopup=this.state.showpopup;
 		var selStart=this.state.selStart;
 		var selLength=this.state.selLength;
@@ -86,7 +96,6 @@ var SelectableRichText=React.createClass({
 				,typedef:this.state.typedef
 				,markups:this.props.markups[row]
 				,textStyle:this.props.textStyle
-				,selectToken:this.selectToken
 				,onTokenTouched:this.onTokenTouched
 				,fetchText:this.fetchText}
 		if (reactNative) {

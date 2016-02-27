@@ -23,7 +23,7 @@ var buildInvertedMarkup=function(markups){
 	}
 	return {markupstart:markupstart,markupend:markupend};
 }
-var _break=function(text,ms,me){
+var _decorate=function(text,ms,me){
 	var M=new Set();
 	var tokens=[], tokenOffsets=[], tokenMarkups=[], lasttext="", lastoffset=0;
 	for (var i=0;i<text.length;i+=1) {
@@ -65,7 +65,7 @@ var shredding=function(para,tokenizer){
 	}
 	return {tokens:tokens,tokenOffsets:tokenOffsets,tokenMarkups:tokenMarkups};
 }
-var breakmarkup=function(tokenizer,text,markups,shred){
+var decorate=function(tokenizer,text,markups,shred){
 	if (!text) return {tokens:[],tokenMarkups:[],tokenOffsets:[]};
 	if (!markups || Object.keys(markups).length==0) {
 		if (shred) {
@@ -77,9 +77,9 @@ var breakmarkup=function(tokenizer,text,markups,shred){
 		}
 	} else {
 		var r=buildInvertedMarkup(markups);
-		var out= _break(text,r.markupstart,r.markupend);
+		var out= _decorate(text,r.markupstart,r.markupend);
 		if (!shred)return out;
 		return shredding(out,tokenizer);
 	}
 }
-module.exports=breakmarkup;
+module.exports=decorate;

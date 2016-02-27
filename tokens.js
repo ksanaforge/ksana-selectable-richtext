@@ -1,6 +1,6 @@
 
 var tokenizer=require("./tokenizer").tokenizer;
-var breakmarkup=require("./breakmarkup");
+var decorator=require("./decorator");
 
 
 var tokenHandler=function(n,evt){
@@ -85,7 +85,7 @@ var getTokens=function(props,text,shredd){
 	if (props.selectable && props.selStart>-1 && props.selLength) {
 		markers[String.fromCharCode(1)+"sel"]={s:props.selStart,l:props.selLength,type:"selecting"};
 	}
-	return breakmarkup(props.tokenizer||tokenizer,text,markers,shredd);
+	return decorator(props.tokenizer||tokenizer,text,markers,shredd);
 }
 
 var styles={
