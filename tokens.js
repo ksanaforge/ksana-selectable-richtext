@@ -42,7 +42,7 @@ var getTokenStyle=function(n) {
 		if (M&&M.length) {
 			if (M[0]!==lastM) selcount++;
 
-			type=(selcount%2)?"selection":"selection_odd";
+			type=(selcount%2)?"selection":"selection_odd"; 
 			
 			lastM=M[0];
 			out=Object.assign(out,typedef[type]);
@@ -56,7 +56,7 @@ var getTokenStyle=function(n) {
 	M.forEach(function(m,idx){
 		if (!markups[m]) {
 			if (M[0]!==lastM) selcount++;
-			type=(selcount%2)?"selection":"selection_odd";
+			type=(selcount%2 )?"selection":"selection";
 			lastM=M[0];
 			out=Object.assign(out,typedef[type]);
 		} else {

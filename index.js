@@ -34,6 +34,7 @@ var SelectableRichText=React.createClass({
 	,componentDidMount:function(){
 		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
+		this.context.store.listen("addSelection",this.addSelection,this);
 	}
 	,componentWillUnmount:function(){
 		this.context.store.unlistenAll(this);
@@ -56,6 +57,10 @@ var SelectableRichText=React.createClass({
 			s++;
 		}
 		this.setState({selLength:s-this.state.selStart});
+	}
+	,addSelection:function(){
+		this.props.onSelection(this.state.selectingParagraph,this.state.selStart,this.state.selLength);
+		this.setState({selStart:-1,selLength:-1,showpopup:false});
 	}
 	,hidePopup:function(){
 		this.setState({showpopup:false});
@@ -139,4 +144,4 @@ var styles={
 	,popup:{position:'absolute',opacity:0.9,borderRadius:5,backgroundColor:'white',
 	shadowRadius:10,shadowColor:"#000000",shadowOffset:{height:1,width:1},shadowOpacity:0.8}
 }
-module.exports={SelectableRichText:SelectableRichText,DeferListView:DeferListView,Selections:require("./selections")};
+module.exports={SelectableRichText:SelectableRichText,DeferListView:DeferListView};
