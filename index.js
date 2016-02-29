@@ -33,15 +33,29 @@ var SelectableRichText=React.createClass({
 	}
 	,componentDidMount:function(){
 		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
+		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
 	}
 	,componentWillUnmount:function(){
 		this.context.store.unlistenAll(this);
 	}
 	,selLengthPlusOne:function(){
-		var text=this.props.rows[this.state.selectingParagraph];
+		var text=this.props.rows[this.state.selectingParagraph].text;
 		if (this.state.selLength+1>=text.length)return;
 		//TODO, English Token and Surrogate
 		this.setState({selLength:this.state.selLength+1})
+	}
+	,selLengthTillPunc:function(){
+		var text=this.props.rows[this.state.selectingParagraph].text;
+		if (this.state.selLength+1>=text.length)return;
+		var s=this.state.selStart+this.state.selLength+1;
+		while (s<text.length) {
+			var code=text.charCodeAt(s);
+			if (!(code>0x3400&&code<0x9FFF)){
+				break;
+			}
+			s++;
+		}
+		this.setState({selLength:s-this.state.selStart});
 	}
 	,hidePopup:function(){
 		this.setState({showpopup:false});
@@ -49,7 +63,6 @@ var SelectableRichText=React.createClass({
 	,propTypes:{
 		rows:PT.array.isRequired 
         ,selections:PT.object
-        ,markups:PT.object
 		,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
 		,typedef:PT.object
 		,onHyperlink:PT.func
@@ -112,6 +125,7 @@ var SelectableRichText=React.createClass({
 		props.ref="listview";
 		props.visibleChanged=this.visibleChanged;
 		props.renderRow=this.renderRow;
+		props.selectingParagraph=this.state.selectingParagraph
 		var popupxy={left:this.state.popupX,top:this.state.popupY};
 		return E(View,{style:{flex:1}},
 				E(DeferListView,props)
@@ -122,7 +136,7 @@ var SelectableRichText=React.createClass({
 var styles={
 	selection:{backgroundColor:"rgb(96,176,255)"}
 	,selection_odd:{backgroundColor:"rgb(176,96,255)"}
-	,popup:{position:'absolute',opacity:0.9,borderRadius:5,
+	,popup:{position:'absolute',opacity:0.9,borderRadius:5,backgroundColor:'white',
 	shadowRadius:10,shadowColor:"#000000",shadowOffset:{height:1,width:1},shadowOpacity:0.8}
 }
 module.exports={SelectableRichText:SelectableRichText,DeferListView:DeferListView,Selections:require("./selections")};

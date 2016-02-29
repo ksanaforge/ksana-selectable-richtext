@@ -13,7 +13,7 @@ module.exports={
 			para:PT.number.isRequired  //paragraph id
 			,ranges:PT.array
 			,markups:PT.object
-			,text:PT.string
+			//,text:PT.string
 			,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
 			,typedef:PT.object
 			,onNativeSelection:PT.func

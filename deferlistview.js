@@ -20,7 +20,7 @@ var DeferListView=React.createClass({
 		style:PropTypes.object
 	}
 	,rowY:{}
-	,rows:{}
+	,rows:[]
 	,getDefaultProps:function(){
 		return {
 			onFetchText: function(row,cb){
@@ -34,9 +34,27 @@ var DeferListView=React.createClass({
 	,getInitialState:function(){
 		this.rows=this.props.rows.slice();
 		var ds=new ListView.DataSource({rowHasChanged:this.rowHasChanged});
-		return {dataSource: ds.cloneWithRows(this.getRows({}))};
+		//return {dataSource: ds.cloneWithRows(this.getRows({}))};
+		return {dataSource:ds.cloneWithRows(this.props.rows)};
 	}
-	,rowHasChanged:(r1,r2)=>r1!==r2
+	,rowHasChanged:function(r1,r2){
+		if (r1!==r2) {
+			console.log('row changed')
+		}
+		return r1!==r2;
+	}
+	,shouldComponentUpdate:function(nextProps,nextState){
+		//datasource and array need to update , otherwise listview will not update
+		if (nextProps.selectingParagraph!==this.props.selectingParagraph) {
+			if (this.props.selectingParagraph>-1)
+				this.rows[this.props.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[this.props.selectingParagraph]));
+			if (nextProps.selectingParagraph>-1) 
+				this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
+			var ds=this.state.dataSource.cloneWithRows(this.rows.slice());
+			nextState.dataSource=ds;
+		}
+		return true;
+	}
 	,getRows:function(loaded){
 		var out=[];
 		for (var i=0;i<this.rows.length;i++) {
@@ -90,6 +108,7 @@ var DeferListView=React.createClass({
 		}.bind(this));		
 	}
 	,onChangeVisibleRows:function(visibleRows){
+
 		var loading=0,tofetch=[],visibles=[],rows=this.props.rows;
 		for (row in visibleRows.s1) {
 			if (!rows[row].text) {
@@ -98,10 +117,13 @@ var DeferListView=React.createClass({
 			}
 			visibles.push(parseInt(row));
 		}
-		if (!loading) return;
+		if (!loading) {
+			this.updateText({});
+			return;
+		}
 		this.fetchTexts(tofetch);
+		clearTimeout(this.visibletimer);
 
-		clearTimeout(this.visibletimer)
 		this.visibletimer=setTimeout(function(){
 			this.props.onViewportChanged&&this.props.onViewportChanged(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
