@@ -1,7 +1,7 @@
 
 var tokenizer=require("./tokenizer").tokenizer;
 var decorator=require("./decorator");
-
+var ACTIVESELTYPE=String.fromCharCode(1)+"sel";
 
 var tokenHandler=function(n,evt){
 	this.hyperlink_clicked=true; //cancel bubbling to onTouchStart
@@ -25,7 +25,7 @@ var getTokenHandler=function(n) {
 }
 var selcount=0,lastM;
 var repaint=function(){
-	selcount=0;
+	selcount=0,lastM="";
 }
 var getTokenStyle=function(n) {
 	var M=this.state.tokenMarkups[n],type;
@@ -39,7 +39,7 @@ var getTokenStyle=function(n) {
 	}
 	var markups=this.props.markups;
 	if (!markups) { //is ranges
-		if (M&&M.length) {
+		if (M&&M.length && M[0]!==ACTIVESELTYPE) {
 			if (M[0]!==lastM) selcount++;
 
 			type=(selcount%2)?"selection":"selection_odd"; 
@@ -54,7 +54,7 @@ var getTokenStyle=function(n) {
 	}
 
 	M.forEach(function(m,idx){
-		if (!markups[m]) {
+		if (!markups[m] && M[0]!==ACTIVESELTYPE) {
 			if (M[0]!==lastM) selcount++;
 			type=(selcount%2 )?"selection":"selection";
 			lastM=M[0];
@@ -83,7 +83,7 @@ var getTokens=function(props,text,shredd){
 		markers[String.fromCharCode(1)+j]={s:props.ranges[j][0],l:props.ranges[j][1],type:"selection"};
 	}
 	if (props.selectable && props.selStart>-1 && props.selLength) {
-		markers[String.fromCharCode(1)+"sel"]={s:props.selStart,l:props.selLength,type:"selecting"};
+		markers[ACTIVESELTYPE]={s:props.selStart,l:props.selLength,type:"selecting"};
 	}
 	return decorator(props.tokenizer||tokenizer,text,markers,shredd);
 }
