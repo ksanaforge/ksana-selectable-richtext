@@ -1,4 +1,4 @@
-var React,Paragraph,DeferListView, reactNative=false;
+var React,Paragraph,DeferListView, reactNative=false , windowW;
 
 try{
 	React=require("react-native");
@@ -6,6 +6,8 @@ try{
 	View=React.View;
 	DeferListView=require("./deferlistview");
 	Paragraph=require("./paragraph");
+	var Dimensions=React.Dimensions;
+	windowW=Dimensions.get("window").width;
 } catch(e) {
 	React=require("react");
 	DeferListView=require("./deferlistview_web");
@@ -78,9 +80,15 @@ var SelectableRichText=React.createClass({
 	,onNativeSelection:function(rowid,sel) {
 		this.props.onSetTextRange(rowid,sel);
 	}
+	,showPopupMenu:function(n,px,py){
+		var POPUPMENUWIDTH=180;
+		var X=px;
+		if (X+POPUPMENUWIDTH>windowW) X=windowW-POPUPMENUWIDTH; 
+		this.setState({selStart:n,selLength:1,popupX:X,popupY:py-22,showpopup:true});	
+	}
 	,onTokenTouched:function(n,evt) {
 		var ne=evt.nativeEvent;
-		this.setState({selStart:n,selLength:1,popupX:ne.pageX,popupY:ne.pageY-22,showpopup:true});
+		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
 
 	,onTouchEnd:function(n,evt) {
