@@ -31,15 +31,25 @@ var SelectableRichText=React.createClass({
 				selectingParagraph:-1,selStart:-1,selLength:0};
 	}
 	,contextTypes:{
-		store:React.PropTypes.object
+		store:PT.object
+		,registerGetter:PT.func
+		,unregisterGetter:PT.func
 	}
 	,componentDidMount:function(){
 		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
 		this.context.store.listen("addSelection",this.addSelection,this);
+		this.context.registerGetter("selectedText",this.getSelectedText);
 	}
 	,componentWillUnmount:function(){
+		this.context.unregisterGetter("selectedText");
 		this.context.store.unlistenAll(this);
+	}
+	,getSelectedText:function(){
+		if (this.state.selectingParagraph===-1||this.state.selStart===-1) return "";
+
+		var text=this.props.rows[this.state.selectingParagraph].text;
+		return text.substr(this.state.selStart,this.state.selLength);
 	}
 	,selLengthPlusOne:function(){
 		var text=this.props.rows[this.state.selectingParagraph].text;
@@ -90,7 +100,6 @@ var SelectableRichText=React.createClass({
 		var ne=evt.nativeEvent;
 		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
-
 	,onTouchEnd:function(n,evt) {
 		var showpopup=this.state.showpopup;
 		var selStart=this.state.selStart;

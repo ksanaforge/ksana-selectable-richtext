@@ -34,7 +34,6 @@ var DeferListView=React.createClass({
 	,getInitialState:function(){
 		this.rows=this.props.rows.slice();
 		var ds=new ListView.DataSource({rowHasChanged:this.rowHasChanged});
-		//return {dataSource: ds.cloneWithRows(this.getRows({}))};
 		return {dataSource:ds.cloneWithRows(this.props.rows)};
 	}
 	,rowHasChanged:function(r1,r2){
@@ -43,17 +42,13 @@ var DeferListView=React.createClass({
 		}
 		return r1!==r2;
 	}
-	,shouldComponentUpdate:function(nextProps,nextState){
-		//datasource and array need to update , otherwise listview will not update
-		if (nextProps.selectingParagraph!==this.props.selectingParagraph) {
-			if (this.props.selectingParagraph>-1)
-				this.rows[this.props.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[this.props.selectingParagraph]));
-			if (nextProps.selectingParagraph>-1) 
-				this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
-			var ds=this.state.dataSource.cloneWithRows(this.rows.slice());
-			nextState.dataSource=ds;
-		}
-		return true;
+	,componentWillReceiveProps:function(nextProps){
+		if (this.props.selectingParagraph>-1)
+			this.rows[this.props.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[this.props.selectingParagraph]));
+		if (nextProps.selectingParagraph>-1) 
+			this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
+		var dataSource=this.state.dataSource.cloneWithRows(this.rows.slice());
+		this.setState({dataSource});
 	}
 	,getRows:function(loaded){
 		var out=[];
