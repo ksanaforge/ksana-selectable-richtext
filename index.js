@@ -94,6 +94,8 @@ var SelectableRichText=React.createClass({
 		,popup:PT.element
 	}
 	,onNativeSelection:function(rowid,sel) {
+		this.selStart=sel[0];
+		this.selLength=sel[1];
 		this.props.onSetTextRange(rowid,sel);
 	}
 	,showPopupMenu:function(n,px,py){
@@ -107,18 +109,37 @@ var SelectableRichText=React.createClass({
 		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
 	,onTouchEnd:function(n,evt) {
+		var ce=evt.nativeEvent.changedTouches;
+		if (evt.nativeEvent.touches.length!==0 || ce.length!==1 || this.pageX<0 || this.pageY<0) return;
+
+		var xdis=this.pageX-ce[0].pageX; xdis=xdis*xdis;
+		var ydis=this.pageY-ce[0].pageY; ydis=ydis*ydis;
+
+		if (xdis>25 || ydis>25) return;
+
 		var showpopup=this.state.showpopup;
-		var selStart=this.state.selStart;
-		var selLength=this.state.selLength;
+		var selStart=this.selStart;
+		var selLength=this.selLength;
 		if (this.state.selectingParagraph!==n) {
 			showpopup=false;
 			selStart=-1;
 			selLength=-1;
+		} else {
+			if (!showpopup) n=-1; //no selection, click on blank area, deselect paragrah
+			if (this.selStart==-1) showpopup=false; //click on blank area, unselect selection , paragraph still selected
+			this.selStart=-1;  //selStart is used.
+			this.selLength=-1;
 		}
+
 		this.setState({selectingParagraph:n,showpopup,selStart,selLength});
 	}
 	,onTouchStart:function(n,evt){
-		
+		if (evt.nativeEvent.touches.length===1) {
+			this.pageX=evt.nativeEvent.pageX;
+			this.pageY=evt.nativeEvent.pageY;
+		} else {
+			this.pageX=-1;this.pageY=-1;
+		}
 	}
 	,fetchText:function(row,cb){
 		if (this.props.rows[row].text) return false;
