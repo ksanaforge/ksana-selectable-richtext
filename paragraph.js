@@ -43,7 +43,7 @@ var Paragraph=React.createClass({
 	}
 });
 var styles=StyleSheet.create({
-	selectedStyle:{backgroundColor:'rgb(148,212,255)'},
+	selectedStyle:{backgroundColor:'rgb(222,242,255)'},
 	selectedTokenEvent:{backgroundColor:'rgb(255,176,96)'}
 })
 module.exports=Paragraph;
