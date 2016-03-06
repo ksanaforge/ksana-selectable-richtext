@@ -60,9 +60,11 @@ var getTokenStyle=function(n) {
 			lastM=M[0];
 			out=Object.assign(out,typedef[type]);
 		} else {
-			type=markups[m].type;
-			if (typedef[type] &&typedef[type].style ) {
-				out=Object.assign(out,typedef[type].style);
+			if (markups[m]) {
+				type=markups[m].type;
+				if (typedef[type] &&typedef[type].style ) {
+					out=Object.assign(out,typedef[type].style);
+				}
 			}
 		}
 	});

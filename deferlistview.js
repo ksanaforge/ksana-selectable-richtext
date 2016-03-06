@@ -49,7 +49,7 @@ var DeferListView=React.createClass({
 			this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
 		var dataSource=this.state.dataSource.cloneWithRows(this.rows.slice());
 		this.setState({dataSource});
-		if (this.props.scrollTo) this.scrollToUti(this.props.scrollTo);
+		if (this.props.scrollTo!==nextProps.scrollTo) this.scrollToUti(this.props.scrollTo);
 	}
 
 	,componentDidMount:function(){
@@ -98,16 +98,7 @@ var DeferListView=React.createClass({
 		var rows=this.getRows(loaded);
 		var ds=this.state.dataSource.cloneWithRows(rows);
 		
-		this.setState({dataSource:ds,rows:rows},function(){
-			if (this.scrollingTo) {
-				setTimeout(function(){
-					if (this.rowY[this.scrollingTo]) {
-						this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
-					}
-					this.scrollingTo=null;
-				}.bind(this),800); //wait until layout complete
-			}
-		}.bind(this));		
+		this.setState({dataSource:ds,rows:rows});		
 	}
 	,onChangeVisibleRows:function(visibleRows){
 
@@ -130,8 +121,19 @@ var DeferListView=React.createClass({
 			this.props.onViewportChanged&&this.props.onViewportChanged(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
 	}
+	,scrollTo:function(){
+		if (this.scrollingTo) {
+			if (this.rowY[this.scrollingTo]) {
+				this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
+			}
+			this.scrollingTo=null;
+		}
+	}
 	,onRowLayout:function(rowid,evt){
 		this.rowY[rowid]=evt.nativeEvent.layout.y;
+		if (parseInt(rowid)===this.scrollingTo) {
+			this.scrollTo();
+		}
 	}
 	,renderRow:function(rowData,sectionId,rowId,highlightRow){	
 		return E(View ,{ref:"para"+rowId,style:{overflow:'hidden'}
@@ -142,6 +144,8 @@ var DeferListView=React.createClass({
 		var y=this.rowY[row];
 		if (y) {
 			this.refs.list.scrollTo({x:0,y:y,animinated:true});
+		} else {
+			this.refs.list.scrollTo({y:100000,x:0});//scrollTo bottom
 		}
 		this.scrollingTo=row;//when layout completed scroll again
 	}
