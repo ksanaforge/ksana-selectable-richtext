@@ -37,9 +37,9 @@ var DeferListView=React.createClass({
 		return {dataSource:ds.cloneWithRows(this.props.rows)};
 	}
 	,rowHasChanged:function(r1,r2){
-		if (r1!==r2) {
-			console.log('row changed')
-		}
+		// if (r1!==r2) {
+		// 	console.log('row changed')
+		// }
 		return r1!==r2;
 	}
 	,componentWillReceiveProps:function(nextProps){
@@ -49,6 +49,11 @@ var DeferListView=React.createClass({
 			this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
 		var dataSource=this.state.dataSource.cloneWithRows(this.rows.slice());
 		this.setState({dataSource});
+		if (this.props.scrollTo) this.scrollToUti(this.props.scrollTo);
+	}
+
+	,componentDidMount:function(){
+		this.scrollToUti(this.props.scrollTo);
 	}
 	,getRows:function(loaded){
 		var out=[];
@@ -96,7 +101,9 @@ var DeferListView=React.createClass({
 		this.setState({dataSource:ds,rows:rows},function(){
 			if (this.scrollingTo) {
 				setTimeout(function(){
-					this.refs.list.scrollTo( this.rowY[this.scrollingTo],0);
+					if (this.rowY[this.scrollingTo]) {
+						this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
+					}
 					this.scrollingTo=null;
 				}.bind(this),800); //wait until layout complete
 			}
@@ -134,16 +141,24 @@ var DeferListView=React.createClass({
 	,scrollToRow:function(row){
 		var y=this.rowY[row];
 		if (y) {
-			this.refs.list.scrollTo( y,0);
-			this.scrollingTo=row;//when layout completed scroll again
+			this.refs.list.scrollTo({x:0,y:y,animinated:true});
 		}
+		this.scrollingTo=row;//when layout completed scroll again
 	}
+	,scrollToUti:function(uti) {
+		if (!uti) return;
+		for (var i=0;i<this.props.rows.length;i+=1) {
+			if (this.props.rows[i].uti===this.props.scrollTo) {
+				this.scrollToRow(i);
+			}
+		}
+	}	
 	,render:function(){
 		return E(View,{style:{flex:1}},
 		E(ListView,{ref:"list",style:[this.props.style,{overflow:'hidden'}],
 		 dataSource:this.state.dataSource 
 		 ,renderRow:this.renderRow, onChangeVisibleRows:this.onChangeVisibleRows
-		 ,pageSize:30,initialListSize:1}));
+		 ,pageSize:30,initialListSize:5}));
 	}
 });
 

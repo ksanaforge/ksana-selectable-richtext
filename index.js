@@ -39,7 +39,11 @@ var SelectableRichText=React.createClass({
 		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
 		this.context.store.listen("addSelection",this.addSelection,this);
-		this.context.registerGetter("selectedText",this.getSelectedText);
+		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
+	}
+	,componentDidUpdate:function(){
+		//navigator.pop will unregister selectedText getter
+		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
 	}
 	,componentWillUnmount:function(){
 		this.context.unregisterGetter("selectedText");
@@ -52,12 +56,14 @@ var SelectableRichText=React.createClass({
 		return text.substr(this.state.selStart,this.state.selLength);
 	}
 	,selLengthPlusOne:function(){
+		if (this.state.selectingParagraph===-1)return;
 		var text=this.props.rows[this.state.selectingParagraph].text;
 		if (this.state.selLength+1>=text.length)return;
 		//TODO, English Token and Surrogate
 		this.setState({selLength:this.state.selLength+1})
 	}
 	,selLengthTillPunc:function(){
+		if (this.state.selectingParagraph===-1)return;
 		var text=this.props.rows[this.state.selectingParagraph].text;
 		if (this.state.selLength+1>=text.length)return;
 		var s=this.state.selStart+this.state.selLength+1;
