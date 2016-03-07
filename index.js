@@ -104,8 +104,27 @@ var SelectableRichText=React.createClass({
 		if (X+POPUPMENUWIDTH>windowW) X=windowW-POPUPMENUWIDTH; 
 		this.setState({selStart:n,selLength:1,popupX:X,popupY:py-22,showpopup:true});	
 	}
+	,saveTouchPos:function(evt){
+		if (evt.nativeEvent.touches.length===1) {
+			this.pageX=evt.nativeEvent.pageX;
+			this.pageY=evt.nativeEvent.pageY;
+		} else {
+			this.pageX=-1;this.pageY=-1;
+		}
+	}
+	,isPress:function(evt){
+		var ce=evt.nativeEvent.changedTouches;
+		if (evt.nativeEvent.touches.length!==0 || ce.length!==1 || this.pageX<0 || this.pageY<0) return;
+
+		var xdis=this.pageX-ce[0].pageX; xdis=xdis*xdis;
+		var ydis=this.pageY-ce[0].pageY; ydis=ydis*ydis;
+
+		return (xdis<25 && ydis<25);		
+	}
 	,onTokenTouched:function(n,evt) {
+		if (!this.isPress(evt))return;
 		var ne=evt.nativeEvent;
+		
 		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
 	,onTouchEnd:function(n,evt) {
@@ -113,13 +132,8 @@ var SelectableRichText=React.createClass({
 			this.cancelBubble=false;
 			return;
 		}		
-		var ce=evt.nativeEvent.changedTouches;
-		if (evt.nativeEvent.touches.length!==0 || ce.length!==1 || this.pageX<0 || this.pageY<0) return;
 
-		var xdis=this.pageX-ce[0].pageX; xdis=xdis*xdis;
-		var ydis=this.pageY-ce[0].pageY; ydis=ydis*ydis;
-
-		if (xdis>25 || ydis>25) return;
+		if (!this.isPress(evt)) return;
 
 		var showpopup=this.state.showpopup;
 		var selStart=this.selStart;
@@ -138,12 +152,7 @@ var SelectableRichText=React.createClass({
 		this.setState({selectingParagraph:n,showpopup,selStart,selLength});
 	}
 	,onTouchStart:function(n,evt){
-		if (evt.nativeEvent.touches.length===1) {
-			this.pageX=evt.nativeEvent.pageX;
-			this.pageY=evt.nativeEvent.pageY;
-		} else {
-			this.pageX=-1;this.pageY=-1;
-		}
+		this.saveTouchPos(evt);
 	}
 	,fetchText:function(row,cb){
 		if (this.props.rows[row].text) return false;
