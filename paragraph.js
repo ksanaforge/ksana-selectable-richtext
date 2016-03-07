@@ -1,5 +1,5 @@
 var React=require("react-native");
-var {View,Text,StyleSheet,PropTypes,TouchableHighlight} = React;
+var {View,Text,StyleSheet,PropTypes,TouchableHighlight,TouchableOpacity} = React;
 var E=React.createElement;
 
 var {getTokenStyle,getTokenHandler,propTypes,repaint}=require("./tokens");
@@ -15,20 +15,39 @@ var Paragraph=React.createClass({
 	,onTokenTouchEnd:function(n,evt){
 		this.props.onTokenTouched&&this.props.onTokenTouched(n,evt);
 	}
-	,onTouchStart:function(){
-		if (this.hyperlink_clicked) {
-			this.hyperlink_clicked=false;
-		} else {
-			this.props.onTouchStart.apply(this,arguments);
+	,hideMarkup:function(){
+		if (this.props.markups){
+			for (var m in this.props.markups) {
+				var mrk=this.props.markups[m];
+				if (mrk && mrk.ttl) {
+					setTimeout(function(){
+						//delete this.props.markups[m];
+						mrk.type="";
+						mrk.ttl=0;
+
+						this.forceUpdate();
+					}.bind(this),mrk.ttl);
+				}
+			}
 		}
+	}
+	,componentDidMount:function(){
+		this.hideMarkup();
+	}
+	,onTouchStart:function(){
+		this.props.onTouchStart.apply(this,arguments);
 	}
 	,renderToken:function(token,idx){
 		var tokenStyle=getTokenStyle.call(this,idx);
 		var tokenHandler=getTokenHandler.call(this,idx);
 		
-		return E(Text,{onTouchStart:this.props.selectable?this.onTokenTouchStart.bind(this,idx):tokenHandler
-		,onTouchEnd:this.props.selectable?this.onTokenTouchEnd.bind(this,idx):null
-		,style:tokenStyle,ref:idx,key:idx},token);
+		if (this.props.selectable) {
+			return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
+					,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
+					,style:tokenStyle,ref:idx,key:idx},token);
+		} else {
+			return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},token);
+		} 
 	}
 	,render:function(){
 		repaint();

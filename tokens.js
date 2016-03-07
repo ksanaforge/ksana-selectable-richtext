@@ -4,10 +4,8 @@ var decorator=require("./decorator");
 var ACTIVESELTYPE=String.fromCharCode(1)+"sel";
 
 var tokenHandler=function(n,evt){
-	this.hyperlink_clicked=true; //cancel bubbling to onTouchStart
-	var M=this.state.tokenMarkups[n];
-	this.props.onHyperlink&&this.props.onHyperlink(this.props.para,M);
-	//TODO highlight hyperlink
+	var m=this.state.tokenMarkups[n];
+	this.props.onHyperlink&&this.props.onHyperlink(m,this.props.para);
 }
 
 var getTokenHandler=function(n) {

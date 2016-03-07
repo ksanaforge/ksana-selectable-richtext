@@ -109,6 +109,10 @@ var SelectableRichText=React.createClass({
 		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
 	,onTouchEnd:function(n,evt) {
+		if (this.hyperlink_clicked) {
+			this.hyperlink_clicked=false;
+			return;
+		}		
 		var ce=evt.nativeEvent.changedTouches;
 		if (evt.nativeEvent.touches.length!==0 || ce.length!==1 || this.pageX<0 || this.pageY<0) return;
 
@@ -145,11 +149,15 @@ var SelectableRichText=React.createClass({
 		if (this.props.rows[row].text) return false;
 		this.props.onFetchText(row,cb);
 	}
+	,onHyperlink:function() {
+		this.hyperlink_clicked=true;
+		this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
+	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text,idx=parseInt(row);
 		var ranges=this.props.selections[row];
 		var params={para:idx, text:text 
-				,onHyperlink:this.props.onHyperlink
+				,onHyperlink:this.onHyperlink
 				,ranges:ranges
 				,selectable:this.state.selectingParagraph===idx
 				,selStart:this.state.selStart

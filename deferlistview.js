@@ -112,19 +112,24 @@ var DeferListView=React.createClass({
 		}
 		if (!loading) {
 			this.updateText({});
-			return;
+		} else {
+			this.fetchTexts(tofetch);
 		}
-		this.fetchTexts(tofetch);
+		
 		clearTimeout(this.visibletimer);
 
 		this.visibletimer=setTimeout(function(){
 			this.props.onViewportChanged&&this.props.onViewportChanged(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
 	}
+	,hideFlashHint:function(){
+		//this.refs["para"+this.scrollingTo].hideFlashHint();
+	}
 	,scrollTo:function(){
-		if (this.scrollingTo) {
-			if (this.rowY[this.scrollingTo]) {
+		if (this.scrollingTo!==null) {
+			if (!isNaN(this.rowY[this.scrollingTo])) {
 				this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
+				setTimeout(this.hideFlashHint.bind(this,this.scrollingTo),1000);
 			}
 			this.scrollingTo=null;
 		}
@@ -143,7 +148,7 @@ var DeferListView=React.createClass({
 	,scrollToRow:function(row){
 		var y=this.rowY[row];
 		if (y) {
-			this.refs.list.scrollTo({x:0,y:y,animinated:true});
+			this.refs.list.scrollTo({x:0,y:y});
 		} else {
 			this.refs.list.scrollTo({y:100000,x:0});//scrollTo bottom
 		}
