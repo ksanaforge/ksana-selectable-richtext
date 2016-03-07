@@ -109,8 +109,8 @@ var SelectableRichText=React.createClass({
 		this.showPopupMenu(n,ne.pageX,ne.pageY);
 	}
 	,onTouchEnd:function(n,evt) {
-		if (this.hyperlink_clicked) {
-			this.hyperlink_clicked=false;
+		if (this.cancelBubble) {
+			this.cancelBubble=false;
 			return;
 		}		
 		var ce=evt.nativeEvent.changedTouches;
@@ -150,7 +150,7 @@ var SelectableRichText=React.createClass({
 		this.props.onFetchText(row,cb);
 	}
 	,onHyperlink:function() {
-		this.hyperlink_clicked=true;
+		this.cancelBubble=true;  //onTouchEnd has no effect
 		this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
 	}
 	,renderRow:function(rowdata,row){

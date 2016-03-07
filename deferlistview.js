@@ -16,7 +16,7 @@ var DeferListView=React.createClass({
 	propTypes:{
 		rows:PropTypes.array.isRequired, 
 		renderRow:PropTypes.func,
-		onViewportChanged:PropTypes.func,
+		onViewport:PropTypes.func,
 		style:PropTypes.object
 	}
 	,rowY:{}
@@ -119,7 +119,7 @@ var DeferListView=React.createClass({
 		clearTimeout(this.visibletimer);
 
 		this.visibletimer=setTimeout(function(){
-			this.props.onViewportChanged&&this.props.onViewportChanged(visibles[0],visibles[visibles.length-1]);
+			this.props.onViewport&&this.props.onViewport(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
 	}
 	,hideFlashHint:function(){

@@ -20,16 +20,18 @@ var Paragraph=React.createClass({
 			for (var m in this.props.markups) {
 				var mrk=this.props.markups[m];
 				if (mrk && mrk.ttl) {
-					setTimeout(function(){
+					this.hidetimer=setTimeout(function(){
 						//delete this.props.markups[m];
 						mrk.type="";
 						mrk.ttl=0;
-
 						this.forceUpdate();
 					}.bind(this),mrk.ttl);
 				}
 			}
 		}
+	}
+	,componentWillUnmount:function(){
+		this.hidetimer&&clearTimeout(this.hidetimer); //prevent forceUpdate for unmounted (user click back within ttl)
 	}
 	,componentDidMount:function(){
 		this.hideMarkup();
