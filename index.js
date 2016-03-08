@@ -185,6 +185,9 @@ var SelectableRichText=React.createClass({
 		return E(View, {style:this.props.style,key:idx}, E(Paragraph, params)
 		);
 	}
+	,scrollToUti:function(uti) {
+		this.refs.listview&&this.refs.listview.scrollToUti(uti);
+	}
 	,render:function(){
 		var props={};
 		for (var i in this.props)	props[i]=this.props[i];
