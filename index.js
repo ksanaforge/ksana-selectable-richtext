@@ -171,7 +171,7 @@ var SelectableRichText=React.createClass({
 		this.cancelBubble=true;  //onTouchEnd has no effect
 		var popup=this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
 		if (popup) {
-			this.showPopupMenu(-1,this.pageX,this.pageY,popup);
+			this.showPopupMenu(-1,popup.props.popupX || this.pageX,this.pageY,popup);
 		}
 	}
 	,renderRow:function(rowdata,row){
