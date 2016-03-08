@@ -55,6 +55,9 @@ var DeferListView=React.createClass({
 	,componentDidMount:function(){
 		this.scrollToUti(this.props.scrollTo);
 	}
+	,componentWillUnmount:function(){
+		this.unmounting=true;
+	}
 	,getRows:function(loaded){
 		var out=[];
 		for (var i=0;i<this.rows.length;i++) {
@@ -88,7 +91,7 @@ var DeferListView=React.createClass({
 		taskqueue.push(function(err,data,retrow){
 			loaded[retrow]=data;
 			setTimeout(function(){
-				this.updateText(loaded);
+				if (!this.unmounting) this.updateText(loaded);
 			}.bind(this),200);
 			
 		}.bind(this));
@@ -119,17 +122,14 @@ var DeferListView=React.createClass({
 		clearTimeout(this.visibletimer);
 
 		this.visibletimer=setTimeout(function(){
+			if(this.unmounting)return;
 			this.props.onViewport&&this.props.onViewport(visibles[0],visibles[visibles.length-1]);
 		}.bind(this),1000);
-	}
-	,hideFlashHint:function(){
-		//this.refs["para"+this.scrollingTo].hideFlashHint();
 	}
 	,scrollTo:function(){
 		if (this.scrollingTo!==null) {
 			if (!isNaN(this.rowY[this.scrollingTo])) {
 				this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
-				setTimeout(this.hideFlashHint.bind(this,this.scrollingTo),1000);
 			}
 			this.scrollingTo=null;
 		}
@@ -167,7 +167,9 @@ var DeferListView=React.createClass({
 		E(ListView,{ref:"list",style:[this.props.style,{overflow:'hidden'}],
 		 dataSource:this.state.dataSource 
 		 ,renderRow:this.renderRow, onChangeVisibleRows:this.onChangeVisibleRows
-		 ,pageSize:30,initialListSize:5}));
+		 ,pageSize:30,initialListSize:5
+		 ,maximumZoomScale:3,bouncesZoom:true
+		 }));
 	}
 });
 
