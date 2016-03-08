@@ -8,6 +8,7 @@ try{
 	Paragraph=require("./paragraph");
 	var Dimensions=React.Dimensions;
 	windowW=Dimensions.get("window").width;
+	windowH=Dimensions.get("window").height;
 } catch(e) {
 	React=require("react");
 	DeferListView=require("./deferlistview_web");
@@ -27,7 +28,7 @@ var SelectableRichText=React.createClass({
 		if (!typedef.selection_odd) {
 			typedef.selection_odd=styles.selection_odd;
 		}
-		return {typedef:typedef,popupX:0,popupY:0,showpopup:false,
+		return {typedef:typedef,popupX:0,popupY:0,showpopup:false,popup:this.props.popup,
 				selectingParagraph:-1,selStart:-1,selLength:0};
 	}
 	,contextTypes:{
@@ -98,11 +99,14 @@ var SelectableRichText=React.createClass({
 		this.selLength=sel[1];
 		this.props.onSetTextRange(rowid,sel);
 	}
-	,showPopupMenu:function(n,px,py){
-		var POPUPMENUWIDTH=180;
-		var X=px;
+	,showPopupMenu:function(n,px,py,popup){
+		var POPUPMENUWIDTH=180,POPUPMENUHEIGHT=300; //TODO ,get from menu
+		popup=popup||this.props.popup;
+		var X=px,Y=py;
 		if (X+POPUPMENUWIDTH>windowW) X=windowW-POPUPMENUWIDTH; 
-		this.setState({selStart:n,selLength:1,popupX:X,popupY:py-22,showpopup:true});	
+		if (Y+POPUPMENUHEIGHT>windowH) Y=windowH-POPUPMENUHEIGHT;
+		this.setState({selStart:n,selLength:1,
+			popupX:px,popupY:py-22,showpopup:true,popup});	
 	}
 	,saveTouchPos:function(evt){
 		if (evt.nativeEvent.touches.length===1) {
@@ -122,10 +126,10 @@ var SelectableRichText=React.createClass({
 		return (xdis<25 && ydis<25);		
 	}
 	,onTokenTouched:function(n,evt) {
-		if (!this.isPress(evt))return;
+		if (!this.isPress(evt) || this.state.selectingParagraph===-1)return;
 		var ne=evt.nativeEvent;
 		
-		this.showPopupMenu(n,ne.pageX,ne.pageY);
+		this.showPopupMenu(n,ne.pageX,ne.pageY,this.props.popup);
 	}
 	,onTouchEnd:function(n,evt) {
 		if (this.cancelBubble) {
@@ -136,6 +140,11 @@ var SelectableRichText=React.createClass({
 		if (!this.isPress(evt)) return;
 
 		var showpopup=this.state.showpopup;
+		if (showpopup && this.state.popup!==this.props.popup &&this.state.popup) {
+			this.setState({showpopup:false});			
+			return;
+		}
+
 		var selStart=this.selStart;
 		var selLength=this.selLength;
 		if (this.state.selectingParagraph!==n) {
@@ -160,7 +169,10 @@ var SelectableRichText=React.createClass({
 	}
 	,onHyperlink:function() {
 		this.cancelBubble=true;  //onTouchEnd has no effect
-		this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
+		var popup=this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
+		if (popup) {
+			this.showPopupMenu(-1,this.pageX,this.pageY,popup);
+		}
 	}
 	,renderRow:function(rowdata,row){
 		var text=rowdata.text,idx=parseInt(row);
@@ -198,7 +210,7 @@ var SelectableRichText=React.createClass({
 		var popupxy={left:this.state.popupX,top:this.state.popupY};
 		return E(View,{style:{flex:1}},
 				E(DeferListView,props)
-				,(this.props.popup&&this.state.showpopup)?E(View,{style:[styles.popup,popupxy]},this.props.popup):null
+				,(this.state.popup&&this.state.showpopup)?E(View,{style:[styles.popup,popupxy]},this.state.popup):null
 				);
 	}
 });
