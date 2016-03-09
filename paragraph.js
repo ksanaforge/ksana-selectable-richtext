@@ -53,7 +53,7 @@ var Paragraph=React.createClass({
 		} else {
 			var hascrlf=token.match(/(.*?)\n+?/);
 			if (!hascrlf) {
-				return renderText(text);
+				return renderText(token);
 			} else {
 				var t=hascrlf[1]; //do not apply onPress to crlf, to limit the tappable area in text only 
 				return [renderText(t),E(Text,{style:tokenStyle,key:idx+'_crlf'},token.substr(t.length))];
