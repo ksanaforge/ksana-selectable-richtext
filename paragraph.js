@@ -39,17 +39,27 @@ var Paragraph=React.createClass({
 	,onTouchStart:function(){
 		this.props.onTouchStart.apply(this,arguments);
 	}
+
 	,renderToken:function(token,idx){
 		var tokenStyle=getTokenStyle.call(this,idx);
 		var tokenHandler=getTokenHandler.call(this,idx);
-		
+		var renderText=function(text){
+			return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
+		}	
 		if (this.props.selectable) {
 			return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
 					,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
 					,style:tokenStyle,ref:idx,key:idx},token);
 		} else {
-			return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},token);
-		} 
+			var hascrlf=token.match(/(.*?)\n+?/);
+			if (!hascrlf) {
+				return renderText(text);
+			} else {
+				var t=hascrlf[1]; //do not apply onPress to crlf, to limit the tappable area in text only 
+				return [renderText(t),E(Text,{style:tokenStyle,key:idx+'_crlf'},token.substr(t.length))];
+			}
+			
+		}
 	}
 	,render:function(){
 		repaint();

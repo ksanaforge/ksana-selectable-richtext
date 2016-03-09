@@ -126,6 +126,9 @@ var SelectableRichText=React.createClass({
 		return (xdis<25 && ydis<25);		
 	}
 	,onTokenTouched:function(n,evt) {
+		if (this.cancelBubble) {
+			return;
+		}	
 		if (!this.isPress(evt) || this.state.selectingParagraph===-1)return;
 		var ne=evt.nativeEvent;
 		
@@ -217,7 +220,7 @@ var SelectableRichText=React.createClass({
 var styles={
 	selection:{backgroundColor:"rgb(96,176,255)"}
 	,selection_odd:{backgroundColor:"rgb(176,96,255)"}
-	,popup:{position:'absolute',opacity:0.9,borderRadius:5,backgroundColor:'white',
+	,popup:{position:'absolute',opacity:0.95,borderRadius:5,backgroundColor:'rgb(240,240,240)',
 	shadowRadius:10,shadowColor:"#000000",shadowOffset:{height:1,width:1},shadowOpacity:0.8}
 }
 module.exports={SelectableRichText:SelectableRichText,DeferListView:DeferListView};
