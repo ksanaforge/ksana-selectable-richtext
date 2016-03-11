@@ -33,6 +33,7 @@ var SelectableRichText=React.createClass({
 	}
 	,contextTypes:{
 		store:PT.object
+		,action:PT.func
 		,registerGetter:PT.func
 		,unregisterGetter:PT.func
 	}
@@ -41,13 +42,17 @@ var SelectableRichText=React.createClass({
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
 		this.context.store.listen("addSelection",this.addSelection,this);
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
+		this.context.registerGetter("selectingParagraph",this.getSelectingParagraph,{overwrite:true});
+		this.context.store.listen("showTocPopup",this.showTocPopup,this);
 	}
 	,componentDidUpdate:function(){
 		//navigator.pop will unregister selectedText getter
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
+		this.context.registerGetter("selectingParagraph",this.getSelectingParagraph,{overwrite:true});
 	}
 	,componentWillUnmount:function(){
 		this.context.unregisterGetter("selectedText");
+		this.context.unregisterGetter("selectingParagraph");
 		this.context.store.unlistenAll(this);
 	}
 	,getSelectedText:function(){
@@ -55,6 +60,9 @@ var SelectableRichText=React.createClass({
 
 		var text=this.props.rows[this.state.selectingParagraph].text;
 		return text.substr(this.state.selStart,this.state.selLength);
+	}
+	,getSelectingParagraph:function() {
+		return this.state.selectingParagraph;
 	}
 	,selLengthPlusOne:function(){
 		if (this.state.selectingParagraph===-1)return;
@@ -99,14 +107,17 @@ var SelectableRichText=React.createClass({
 		this.selLength=sel[1];
 		this.props.onSetTextRange(rowid,sel);
 	}
-	,showPopupMenu:function(n,px,py,popup){
+	,showTocPopup:function(opts) { //call from nav bar
+		if (!opts.popup)return;
+		this.showPopupMenu(opts.px||5,opts.py||100, opts.popup);
+	}
+	,showPopupMenu:function(px,py,popup){
 		var POPUPMENUWIDTH=180,POPUPMENUHEIGHT=300; //TODO ,get from menu
 		popup=popup||this.props.popup;
 		var X=px,Y=py;
 		if (X+POPUPMENUWIDTH>windowW) X=windowW-POPUPMENUWIDTH; 
 		if (Y+POPUPMENUHEIGHT>windowH) Y=windowH-POPUPMENUHEIGHT;
-		this.setState({selStart:n,selLength:1,
-			popupX:px,popupY:py-22,showpopup:true,popup});	
+		this.setState({popupX:px,popupY:py-22,showpopup:true,popup});	
 	}
 	,saveTouchPos:function(evt){
 		if (evt.nativeEvent.touches.length===1) {
@@ -132,7 +143,8 @@ var SelectableRichText=React.createClass({
 		if (!this.isPress(evt) || this.state.selectingParagraph===-1)return;
 		var ne=evt.nativeEvent;
 		
-		this.showPopupMenu(n,ne.pageX,ne.pageY,this.props.popup);
+		this.setState({selStart:n,selLength:1});
+		this.showPopupMenu(ne.pageX,ne.pageY,this.props.popup);
 	}
 	,onTouchEnd:function(n,evt) {
 		if (this.cancelBubble) {
@@ -160,7 +172,9 @@ var SelectableRichText=React.createClass({
 			this.selStart=-1;  //selStart is used.
 			this.selLength=-1;
 		}
-
+		if (this.state.selectingParagraph!==n) {
+			this.context.action("selectingParagraph",n);
+		}
 		this.setState({selectingParagraph:n,showpopup,selStart,selLength});
 	}
 	,onTouchStart:function(n,evt){
@@ -174,7 +188,7 @@ var SelectableRichText=React.createClass({
 		this.cancelBubble=true;  //onTouchEnd has no effect
 		var popup=this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
 		if (popup) {
-			this.showPopupMenu(-1,popup.props.popupX || this.pageX,this.pageY,popup);
+			this.showPopupMenu(popup.props.popupX || this.pageX,this.pageY,popup);
 		}
 	}
 	,renderRow:function(rowdata,row){
