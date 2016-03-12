@@ -221,8 +221,9 @@ var SelectableRichText=React.createClass({
 		var props={};
 		for (var i in this.props)	props[i]=this.props[i];
 		props.ref="listview";
-		props.visibleChanged=this.visibleChanged;
+
 		props.renderRow=this.renderRow;
+		props.onViewPort=this.onViewPort;
 		props.selectingParagraph=this.state.selectingParagraph
 		var popupxy={left:this.state.popupX,top:this.state.popupY};
 		return E(View,{style:{flex:1}},

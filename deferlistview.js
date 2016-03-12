@@ -48,7 +48,7 @@ var DeferListView=React.createClass({
 		if (nextProps.selectingParagraph>-1) 
 			this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
 		var dataSource=this.state.dataSource.cloneWithRows(this.rows.slice());
-		this.setState({dataSource});
+		if (!this.unmounting) this.setState({dataSource});
 		if (this.props.scrollTo!==nextProps.scrollTo) this.scrollToUti(nextProps.scrollTo);
 	}
 
@@ -91,13 +91,14 @@ var DeferListView=React.createClass({
 		taskqueue.push(function(err,data,retrow){
 			loaded[retrow]=data;
 			setTimeout(function(){
-				if (!this.unmounting) this.updateText(loaded);
+				this.updateText(loaded);
 			}.bind(this),200);
 			
 		}.bind(this));
 		taskqueue.shift()(0,{empty:true});
 	}
 	,updateText:function(loaded){
+		if (this.unmounting) return;
 		var rows=this.getRows(loaded);
 		var ds=this.state.dataSource.cloneWithRows(rows);
 		
