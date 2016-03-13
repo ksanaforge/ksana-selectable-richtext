@@ -43,6 +43,10 @@ var simple1=function(s) {
 
 		if (last<str.length) {
 			while (isSpace(sp=str[last]) && last<str.length) {
+				if (!tokens.length) {
+					offsets.push(0);
+					tokens.push("");//when str is starts with blank
+				}
 				tokens[tokens.length-1]+=sp;
 				last++;
 			}
