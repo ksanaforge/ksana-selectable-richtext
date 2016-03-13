@@ -1,5 +1,5 @@
 /* Defer loading List View for React Native*/
-
+"use strict";
 var React=require("react-native");
 var {
   View,Text,Image,ListView,StyleSheet,TouchableHighlight,PropTypes
@@ -106,7 +106,7 @@ var DeferListView=React.createClass({
 	}
 	,onChangeVisibleRows:function(visibleRows){
 		var loading=0,tofetch=[],visibles=[],rows=this.props.rows;
-		for (row in visibleRows.s1) {
+		for (var row in visibleRows.s1) {
 			if (!rows[row].text) {
 				tofetch.push(row);
 				loading++;

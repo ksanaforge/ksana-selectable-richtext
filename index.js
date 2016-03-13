@@ -97,7 +97,9 @@ var SelectableRichText=React.createClass({
 		this.selectionChanged(this.state.selStart,selLength);
 	}
 	,addSelection:function(){
-		this.props.onSelection(this.state.selectingParagraph,this.state.selStart,this.state.selLength);
+		var text=this.getSelectedText();
+		this.props.onSelection({paragraph:this.state.selectingParagraph,text,
+				selStart:this.state.selStart,selLength:this.state.selLength});
 		this.setState({selStart:-1,selLength:-1,showpopup:false});
 		this.selectionChanged(-1,-1);
 	}
