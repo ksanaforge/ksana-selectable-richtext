@@ -43,6 +43,7 @@ var DeferListView=React.createClass({
 		return r1!==r2;
 	}
 	,componentWillReceiveProps:function(nextProps){
+		this.rows=nextProps.rows;
 		if (this.props.selectingParagraph>-1)
 			this.rows[this.props.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[this.props.selectingParagraph]));
 		if (nextProps.selectingParagraph>-1) 
