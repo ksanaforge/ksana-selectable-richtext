@@ -105,7 +105,6 @@ var DeferListView=React.createClass({
 		this.setState({dataSource:ds,rows:rows});		
 	}
 	,onChangeVisibleRows:function(visibleRows){
-
 		var loading=0,tofetch=[],visibles=[],rows=this.props.rows;
 		for (row in visibleRows.s1) {
 			if (!rows[row].text) {

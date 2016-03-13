@@ -54,7 +54,7 @@ var getTokenStyle=function(n) {
 	M.forEach(function(m,idx){
 		if (!markups[m] && M[0]!==ACTIVESELTYPE) {
 			if (M[0]!==lastM) selcount++;
-			type=(selcount%2 )?"selection":"selection";
+			type=(selcount%2 )?"selection":"selection_odd";
 			lastM=M[0];
 			out=Object.assign(out,typedef[type]);
 		} else {

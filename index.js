@@ -33,7 +33,6 @@ var SelectableRichText=React.createClass({
 	}
 	,contextTypes:{
 		store:PT.object
-		,action:PT.func
 		,registerGetter:PT.func
 		,unregisterGetter:PT.func
 	}
@@ -42,17 +41,17 @@ var SelectableRichText=React.createClass({
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
 		this.context.store.listen("addSelection",this.addSelection,this);
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
-		this.context.registerGetter("selectingParagraph",this.getSelectingParagraph,{overwrite:true});
+		this.context.registerGetter("selectedParagraph",this.getSelectingParagraph,{overwrite:true});
 		this.context.store.listen("showTocPopup",this.showTocPopup,this);
 	}
 	,componentDidUpdate:function(){
 		//navigator.pop will unregister selectedText getter
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
-		this.context.registerGetter("selectingParagraph",this.getSelectingParagraph,{overwrite:true});
+		this.context.registerGetter("selectedParagraph",this.getSelectingParagraph,{overwrite:true});
 	}
 	,componentWillUnmount:function(){
 		this.context.unregisterGetter("selectedText");
-		this.context.unregisterGetter("selectingParagraph");
+		this.context.unregisterGetter("selectedParagraph");
 		this.context.store.unlistenAll(this);
 	}
 	,getSelectedText:function(){
@@ -64,12 +63,22 @@ var SelectableRichText=React.createClass({
 	,getSelectingParagraph:function() {
 		return this.state.selectingParagraph;
 	}
+	,selectionChanged:function(selStart,selLength,selectingParagraph){
+		if (selectingParagraph==undefined) selectingParagraph=this.state.selectingParagraph;
+		
+		var paragraph=this.props.rows[selectingParagraph];
+		if (!paragraph) return;
+		paragraph=paragraph.text;
+		this.props.onSelectToken({selStart,selLength,paragraph});
+	}
 	,selLengthPlusOne:function(){
 		if (this.state.selectingParagraph===-1)return;
 		var text=this.props.rows[this.state.selectingParagraph].text;
 		if (this.state.selLength+1>=text.length)return;
 		//TODO, English Token and Surrogate
-		this.setState({selLength:this.state.selLength+1})
+		var selLength=this.state.selLength+1;
+		this.setState({selLength});
+		this.selectionChanged(this.state.selStart,selLength);
 	}
 	,selLengthTillPunc:function(){
 		if (this.state.selectingParagraph===-1)return;
@@ -83,11 +92,14 @@ var SelectableRichText=React.createClass({
 			}
 			s++;
 		}
-		this.setState({selLength:s-this.state.selStart});
+		var selLength=s-this.state.selStart
+		this.setState({selLength});
+		this.selectionChanged(this.state.selStart,selLength);
 	}
 	,addSelection:function(){
 		this.props.onSelection(this.state.selectingParagraph,this.state.selStart,this.state.selLength);
 		this.setState({selStart:-1,selLength:-1,showpopup:false});
+		this.selectionChanged(-1,-1);
 	}
 	,hidePopup:function(){
 		this.setState({showpopup:false});
@@ -173,8 +185,10 @@ var SelectableRichText=React.createClass({
 			this.selLength=-1;
 		}
 		if (this.state.selectingParagraph!==n) {
-			this.context.action("selectingParagraph",n);
+			this.props.onSelectParagraph(n);
+			
 		}
+		if (n>-1) this.selectionChanged(selStart,selLength);
 		this.setState({selectingParagraph:n,showpopup,selStart,selLength});
 	}
 	,onTouchStart:function(n,evt){
@@ -223,7 +237,7 @@ var SelectableRichText=React.createClass({
 		props.ref="listview";
 
 		props.renderRow=this.renderRow;
-		props.onViewPort=this.onViewPort;
+
 		props.selectingParagraph=this.state.selectingParagraph
 		var popupxy={left:this.state.popupX,top:this.state.popupY};
 		return E(View,{style:{flex:1}},
