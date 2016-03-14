@@ -124,7 +124,7 @@ var DeferListView=React.createClass({
 
 		this.visibletimer=setTimeout(function(){
 			if(this.unmounting)return;
-			this.props.onViewport&&this.props.onViewport(visibles[0],visibles[visibles.length-1]);
+			this.props.onViewport&&this.props.onViewport(visibles[0]||0,visibles[visibles.length-1]||0);
 		}.bind(this),1000);
 	}
 	,scrollTo:function(){
