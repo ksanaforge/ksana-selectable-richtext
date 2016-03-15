@@ -12,7 +12,7 @@ module.exports={
 	propTypes:{
 			para:PT.number.isRequired  //paragraph id
 			,ranges:PT.array
-			,markups:PT.object
+			,markups:PT.array
 			//,text:PT.string
 			,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
 			,typedef:PT.object

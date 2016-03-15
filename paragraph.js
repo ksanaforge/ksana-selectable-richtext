@@ -18,7 +18,7 @@ var Paragraph=React.createClass({
 	}
 	,hideMarkup:function(){
 		if (this.props.markups){
-			for (var m in this.props.markups) {
+			for (var m=0;m<this.props.markups.length;m+=1) {
 				var mrk=this.props.markups[m];
 				if (mrk && mrk.ttl) {
 					this.hidetimer=setTimeout(function(){
