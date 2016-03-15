@@ -21,6 +21,7 @@ var DeferListView=React.createClass({
 	}
 	,rowY:{}
 	,rows:[]
+	,scrollBottom:0 //bottom of scrollable area
 	,getDefaultProps:function(){
 		return {
 			onFetchText: function(row,cb){
@@ -43,6 +44,7 @@ var DeferListView=React.createClass({
 		return r1!==r2;
 	}
 	,componentWillReceiveProps:function(nextProps){
+		if (!this.rows!==nextProps.rows) this.scrollBottom=0; //re layout
 		this.rows=nextProps.rows;
 		if (this.props.selectingParagraph>-1)
 			this.rows[this.props.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[this.props.selectingParagraph]));
@@ -50,6 +52,7 @@ var DeferListView=React.createClass({
 			this.rows[nextProps.selectingParagraph]=JSON.parse(JSON.stringify(this.rows[nextProps.selectingParagraph]));
 		var dataSource=this.state.dataSource.cloneWithRows(this.rows.slice());
 		if (!this.unmounting) this.setState({dataSource});
+
 		if (this.props.scrollTo!==nextProps.scrollTo) this.scrollToUti(nextProps.scrollTo);
 	}
 
@@ -128,17 +131,28 @@ var DeferListView=React.createClass({
 		}.bind(this),1000);
 	}
 	,scrollTo:function(){
-		if (this.scrollingTo!==null) {
-			if (!isNaN(this.rowY[this.scrollingTo])) {
-				this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
-			}
+		if (this.scrollingTo!==null && !isNaN(this.rowY[this.scrollingTo])) {
+			clearTimeout(this.scrollTimer);
+			this.refs.list.scrollTo( {y:this.rowY[this.scrollingTo],x:0,animinated:true});
 			this.scrollingTo=null;
 		}
 	}
+	,maxY:function(){
+		var obj=this.rowY;
+		var arr = Object.keys( obj ).map(function ( key ) { return obj[key] });
+		return Math.max.apply(null,arr);
+	}
 	,onRowLayout:function(rowid,evt){
-		this.rowY[rowid]=evt.nativeEvent.layout.y;
+		var y=evt.nativeEvent.layout.y;
+		this.rowY[rowid]=y;
+
 		if (parseInt(rowid)===this.scrollingTo) {
 			this.scrollTo();
+		} else { //scroll to maximum, listview will load more rows
+			clearTimeout(this.scrollTimer);
+			this.scrollTimer=setTimeout(function(){
+				if (this.scrollingTo) this.refs.list.scrollTo({y:this.maxY(),animinated:false}); //scroll to bottom , more rows will be layout
+			}.bind(this),300);
 		}
 	}
 	,renderRow:function(rowData,sectionId,rowId,highlightRow){	
@@ -151,7 +165,7 @@ var DeferListView=React.createClass({
 		if (y) {
 			this.refs.list.scrollTo({x:0,y:y});
 		} else {
-			this.refs.list.scrollTo({y:100000,x:0});//scrollTo bottom
+			this.refs.list.scrollTo({y:0,x:0});
 		}
 		this.scrollingTo=row;//when layout completed scroll again
 	}
