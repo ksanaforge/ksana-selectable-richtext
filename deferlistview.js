@@ -21,6 +21,7 @@ var DeferListView=React.createClass({
 	}
 	,rowY:{}
 	,rows:[]
+	,scrollingTo:null //scrolling to this uti
 	,scrollBottom:0 //bottom of scrollable area
 	,getDefaultProps:function(){
 		return {
@@ -180,7 +181,7 @@ var DeferListView=React.createClass({
 	,render:function(){
 		return E(View,{style:{flex:1}},
 		E(ListView,{ref:"list",style:[this.props.style,{overflow:'hidden'}],
-		 dataSource:this.state.dataSource 
+		 dataSource:this.state.dataSource , scrollEnabled:!this.scrollingTo
 		 ,renderRow:this.renderRow, onChangeVisibleRows:this.onChangeVisibleRows
 		 ,pageSize:30,initialListSize:5
 		 ,maximumZoomScale:3,bouncesZoom:true
