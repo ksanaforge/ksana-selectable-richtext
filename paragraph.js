@@ -7,6 +7,9 @@ var {getTokenStyle,getTokenHandler,propTypes,repaint}=require("./tokens");
 
 var Paragraph=React.createClass({
 	mixins:[require("./paragraph_mixin")]
+	,contextTypes:{
+		getter:React.PropTypes.func
+	}
 	,onTokenTouchStart:function(n,evt){
 		var start=this.state.tokenOffsets[n];
 		if (!start)return;
@@ -18,7 +21,7 @@ var Paragraph=React.createClass({
 	}
 	,hideMarkup:function(){
 		if (this.props.markups){
-			for (var m=0;m<this.props.markups.length;m+=1) {
+			for (var m in this.props.markups) {
 				var mrk=this.props.markups[m];
 				if (mrk && mrk.ttl) {
 					this.hidetimer=setTimeout(function(){
@@ -40,27 +43,37 @@ var Paragraph=React.createClass({
 	,onTouchStart:function(){
 		this.props.onTouchStart.apply(this,arguments);
 	}
-
+	,viewpress:function(){
+		console.log('viewpress')
+	}
 	,renderToken:function(token,idx){
 		var tokenStyle=getTokenStyle.call(this,idx);
+
 		var tokenHandler=getTokenHandler.call(this,idx);
-		var renderText=function(text){
-			return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
-		}	
-		if (this.props.selectable) {
-			return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
-					,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
-					,style:tokenStyle,ref:idx,key:idx},token);
-		} else {
-			var hascrlf=token.match(/(.*?)\n+?/);
-			if (!hascrlf) {
-				return renderText(token);
+		var renderText=function(text,selectable){
+			if (selectable) {
+				var crlf=null;
+				var w=this.context.getter("dimension").screenWidth;
+				if (text=="\n") {
+					return E(View,{key:idx,onTouchStart:this.viewpress,height:0,width:w,backgroundColor:'blue'});text="";
+				}
+				return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
+									,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
+									,style:[this.props.textStyle,tokenStyle],ref:idx,key:idx},text);
 			} else {
-				var t=hascrlf[1]; //do not apply onPress to crlf, to limit the tappable area in text only 
-				return [renderText(t),E(Text,{style:tokenStyle,key:idx+'_crlf'},token.substr(t.length))];
+				return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
 			}
 			
+		}	
+
+		var hascrlf=token.match(/(.*?)\n+?/);
+		if (!hascrlf||this.props.selectable) {
+			return renderText.call(this,token,this.props.selectable);
+		} else {
+			var t=hascrlf[1]; //do not apply onPress to crlf, to limit the tappable area in text only 
+			return [renderText.call(this,t,this.props.selectable),E(Text,{style:tokenStyle,key:idx+'_crlf'},token.substr(t.length))];
 		}
+			
 	}
 	,render:function(){
 		repaint();
@@ -70,7 +83,8 @@ var Paragraph=React.createClass({
 		}
 		
 		return E(View,{style:{flex:1}},
-			E(Text,	{style:[styles.selectedStyle,this.props.textStyle,this.props.selectedStyle]},
+			E(View,	{style:[styles.selectedStyle,this.props.selectedStyle,
+				{flexDirection:'row',flexWrap:"wrap"}]},
 				this.state.tokens.map(this.renderToken)));
 	}
 });
