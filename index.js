@@ -120,6 +120,7 @@ var SelectableRichText=React.createClass({
 		this.selStart=sel[0];
 		this.selLength=sel[1];
 		this.props.onSetTextRange(rowid,sel);
+		this.setState({selStart:this.selStart,selLength:this.selLength});
 	}
 	,showTocPopup:function(opts) { //call from nav bar
 		if (!opts.popup)return;
@@ -150,14 +151,13 @@ var SelectableRichText=React.createClass({
 
 		return (xdis<25 && ydis<25);		
 	}
-	,onTokenTouched:function(n,evt) {
+	,onTokenTouched:function(evt) {
 		if (this.cancelBubble) {
 			return;
 		}	
-		if (!this.isPress(evt) || this.state.selectingParagraph===-1)return;
+		if ( this.state.selectingParagraph===-1)return;
 		var ne=evt.nativeEvent;
 		
-		this.setState({selStart:n,selLength:1});
 		this.showPopupMenu(ne.pageX,ne.pageY,this.props.popup);
 	}
 	,onTouchEnd:function(n,evt) {

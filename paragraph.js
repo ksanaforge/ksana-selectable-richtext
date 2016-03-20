@@ -1,4 +1,4 @@
-"use strict";
+//"use strict";
 var React=require("react-native");
 var {View,Text,StyleSheet,PropTypes,TouchableHighlight,TouchableOpacity} = React;
 var E=React.createElement;
@@ -10,42 +10,57 @@ var Paragraph=React.createClass({
 	,contextTypes:{
 		getter:React.PropTypes.func
 	}
-	,onTokenTouchStart:function(n,evt){
+	,tokenRect:[]
+	,getTokenFromXY:function(x,y){
+		for (var i=0;i<this.tokenRect.length;i+=1) {
+			var t=this.tokenRect[i];
+			if (t && x>t[0]&&y>t[1]&&x<t[2]&&y<t[3]) return i;
+		}
+		return -1;
+	}
+	,onTokenTouchStart:function(evt){
+		var x=evt.nativeEvent.pageX-this.px,y=evt.nativeEvent.pageY-this.py;
+		var n=this.getTokenFromXY(x,y);
+		if (n===-1) return;
+
 		var start=this.state.tokenOffsets[n];
+		this.start=n;
+
 		if (!start)return;
 		var len=1;
 		this.props.onNativeSelection&&this.props.onNativeSelection(this.props.para,[start,len]);
 	}
-	,onTokenTouchEnd:function(n,evt){
-		this.props.onTokenTouched&&this.props.onTokenTouched(n,evt);
+	,onTokenTouchEnd:function(evt){
+		this.start=-1;
+		this.end=-1;
+		this.props.onTokenTouched&&this.props.onTokenTouched(evt);
 	}
-	,hideMarkup:function(){
-		if (this.props.markups){
-			for (var m in this.props.markups) {
-				var mrk=this.props.markups[m];
-				if (mrk && mrk.ttl) {
-					this.hidetimer=setTimeout(function(){
-						//delete this.props.markups[m];
-						mrk.type="";
-						mrk.ttl=0;
-						this.forceUpdate();
-					}.bind(this),mrk.ttl);
-				}
-			}
+	,onTokenTouchMove:function(evt){
+		var x=evt.nativeEvent.pageX-this.px,y=evt.nativeEvent.pageY-this.py;
+
+		var n=this.getTokenFromXY(x,y);
+		if (n==-1)return;
+
+		var end=this.state.tokenOffsets[n];
+		if (this.start>-1 && end>this.start && this.end!==end) {
+			this.end=end;
+			this.props.onNativeSelection&&
+			this.props.onNativeSelection(this.props.para,[this.start,end-this.start]);
 		}
 	}
-	,componentWillUnmount:function(){
-		this.hidetimer&&clearTimeout(this.hidetimer); //prevent forceUpdate for unmounted (user click back within ttl)
-	}
-	,componentDidMount:function(){
-		this.hideMarkup();
-	}
+
 	,onTouchStart:function(){
 		this.props.onTouchStart.apply(this,arguments);
 	}
 	,viewpress:function(){
 		console.log('viewpress')
 	}
+
+	,onLayout:function(idx,evt){
+		var L=evt.nativeEvent.layout;
+		this.tokenRect[idx]=[L.x,L.y,L.x+L.width,L.y+L.height];
+	}
+
 	,renderToken:function(token,idx){
 		var tokenStyle=getTokenStyle.call(this,idx);
 
@@ -57,9 +72,11 @@ var Paragraph=React.createClass({
 				if (text=="\n") {
 					return E(View,{key:idx,onTouchStart:this.viewpress,height:0,width:w,backgroundColor:'blue'});text="";
 				}
-				return E(Text,{onTouchStart:this.onTokenTouchStart.bind(this,idx)
-									,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
-									,style:[this.props.textStyle,tokenStyle],ref:idx,key:idx},text);
+				return E(View,{onLayout:this.onLayout.bind(this,idx),key:idx},E(Text,{
+								//,onTouchStart:this.onTokenTouchStart.bind(this,idx)
+								//	,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
+							//		,onTouchMove:this.onTouchMove.bind(this,idx)
+									style:[this.props.textStyle,tokenStyle],ref:idx},text));
 			} else {
 				return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
 			}
@@ -75,17 +92,26 @@ var Paragraph=React.createClass({
 		}
 			
 	}
+	,onLayoutContainer:function(){
+		this.refs.container.measure(function(fx,fy,w,h,px,py){
+			this.px=px;this.py=py;
+		}.bind(this))
+	}
 	,render:function(){
 		repaint();
 		if (!this.props.selectable) {
+			this.tokenRect=[];
 			return E(View,{onTouchStart:this.onTouchStart,onTouchEnd:this.props.onTouchEnd},
 				E(Text,{style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
 		}
 		
-		return E(View,{style:{flex:1}},
-			E(View,	{style:[styles.selectedStyle,this.props.selectedStyle,
+		return 	E(View,	{onLayout:this.onLayoutContainer,onTouchStart:this.onTokenTouchStart,
+			onTouchMove:this.onTokenTouchMove,
+			onTouchEnd:this.onTokenTouchEnd,
+			ref:"container",
+			style:[styles.selectedStyle,this.props.selectedStyle,
 				{flexDirection:'row',flexWrap:"wrap"}]},
-				this.state.tokens.map(this.renderToken)));
+				this.state.tokens.map(this.renderToken));
 	}
 });
 var styles=StyleSheet.create({

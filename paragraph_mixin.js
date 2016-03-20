@@ -7,6 +7,7 @@ try{
 	React=require("react");
 }
 var PT=React.PropTypes;
+var PanResponder=React.PanResponder;
 var getTokens=require("./tokens").getTokens;
 module.exports={
 	propTypes:{
@@ -24,6 +25,25 @@ module.exports={
 		res.typedef=this.props.typedef;
 		return res;
 	}
+	,hideMarkup:function(){
+		if (this.props.markups){
+			for (var m in this.props.markups) {
+				var mrk=this.props.markups[m];
+				if (mrk && mrk.ttl) {
+					this.hidetimer=setTimeout(function(){
+						//delete this.props.markups[m];
+						mrk.type="";
+						mrk.ttl=0;
+						this.forceUpdate();
+					}.bind(this),mrk.ttl);
+				}
+			}
+		}
+	}
+	
+	,componentWillUnmount:function(){
+		this.hidetimer&&clearTimeout(this.hidetimer); //prevent forceUpdate for unmounted (user click back within ttl)
+	}
 	,componentDidMount:function(){
 		this.props.fetchText(this.props.para,function(err,text,row){
 			var shredd=this.props.selectable&&reactNative;
@@ -31,6 +51,7 @@ module.exports={
 			res.text=text;
 			this.setState(res);
 		}.bind(this));
+		this.hideMarkup();
 	}
 	,shouldComponentUpdate:function(nextProps,nextState){
 		var selectableChange = nextProps.selectable!==this.props.selectable;
