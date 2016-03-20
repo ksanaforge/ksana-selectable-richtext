@@ -19,6 +19,12 @@ var Paragraph=React.createClass({
 		return -1;
 	}
 	,onTokenTouchStart:function(evt){
+		var ne=evt.nativeEvent;
+		if (ne.touches.length!==1) {
+			this.start=-1;
+			return;
+		}
+
 		var x=evt.nativeEvent.pageX-this.px,y=evt.nativeEvent.pageY-this.py;
 		var n=this.getTokenFromXY(x,y);
 		if (n===-1) return;
@@ -31,11 +37,12 @@ var Paragraph=React.createClass({
 		this.props.onNativeSelection&&this.props.onNativeSelection(this.props.para,[start,len]);
 	}
 	,onTokenTouchEnd:function(evt){
+		if (this.start!==-1) this.props.onTokenTouched&&this.props.onTokenTouched(evt);
 		this.start=-1;
 		this.end=-1;
-		this.props.onTokenTouched&&this.props.onTokenTouched(evt);
 	}
 	,onTokenTouchMove:function(evt){
+		if (this.start==-1)return;
 		var x=evt.nativeEvent.pageX-this.px,y=evt.nativeEvent.pageY-this.py;
 
 		var n=this.getTokenFromXY(x,y);
