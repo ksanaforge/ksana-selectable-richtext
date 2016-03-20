@@ -151,14 +151,13 @@ var SelectableRichText=React.createClass({
 
 		return (xdis<25 && ydis<25);		
 	}
-	,onTokenTouched:function(evt) {
+	,onTokenTouched:function(x,y) {
 		if (this.cancelBubble) {
 			return;
 		}	
 		if ( this.state.selectingParagraph===-1)return;
-		var ne=evt.nativeEvent;
 		
-		this.showPopupMenu(ne.pageX,ne.pageY,this.props.popup);
+		this.showPopupMenu(x,y,this.props.popup);
 	}
 	,onTouchEnd:function(n,evt) {
 		if (this.cancelBubble) {
