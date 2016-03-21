@@ -177,13 +177,23 @@ var DeferListView=React.createClass({
 				this.scrollToRow(i);
 			}
 		}
-	}	
+	}
+	,getZoomScale:function(){
+		return this.zoomScale;
+	}
+	,zoomScale:1
+	,onScroll:function(evt){
+		this.zoomScale=evt.nativeEvent.zoomScale;
+	}
 	,render:function(){
 		return E(View,{style:{flex:1}},
 		E(ListView,{ref:"list",style:[this.props.style,{overflow:'hidden'}],
 		 dataSource:this.state.dataSource , scrollEnabled:!this.scrollingTo
 		 ,renderRow:this.renderRow, onChangeVisibleRows:this.onChangeVisibleRows
 		 ,pageSize:30,initialListSize:5
+		 ,minimumZoomScale:0.5
+		 ,zoomScale:1
+		 ,onScroll:this.onScroll
 		 ,maximumZoomScale:3,bouncesZoom:true
 		 }));
 	}

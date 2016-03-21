@@ -42,6 +42,7 @@ var SelectableRichText=React.createClass({
 		this.context.store.listen("addSelection",this.addSelection,this);
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
 		this.context.registerGetter("selectedParagraph",this.getSelectingParagraph,{overwrite:true});
+		this.context.registerGetter("zoomScale",this.getZoomScale,{overwrite:true});
 		this.context.store.listen("showTocPopup",this.showTocPopup,this);
 	}
 	,componentDidUpdate:function(){
@@ -52,6 +53,7 @@ var SelectableRichText=React.createClass({
 	,componentWillUnmount:function(){
 		this.context.unregisterGetter("selectedText");
 		this.context.unregisterGetter("selectedParagraph");
+		this.context.unregisterGetter("zoomScale");
 		this.context.store.unlistenAll(this);
 	}
 	,getSelectedText:function(){
@@ -59,6 +61,9 @@ var SelectableRichText=React.createClass({
 
 		var text=this.props.rows[this.state.selectingParagraph].text;
 		return text.substr(this.state.selStart,this.state.selLength);
+	}
+	,getZoomScale:function(){
+		return this.refs.listview.getZoomScale();
 	}
 	,getSelectingParagraph:function() {
 		return this.state.selectingParagraph;

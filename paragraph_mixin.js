@@ -56,8 +56,10 @@ module.exports={
 	,shouldComponentUpdate:function(nextProps,nextState){
 		var selectableChange = nextProps.selectable!==this.props.selectable;
 		var selectingChange = nextProps.selectable && (nextProps.selStart!==this.props.selStart||nextProps.selLength!==this.props.selLength);
-
-		var changed= selectingChange || selectableChange || nextProps.text!==nextState.text||nextProps.markups!==this.props.markups||nextProps.ranges!==this.props.ranges;
+	
+		var changed= selectingChange || selectableChange
+			||nextProps.text!==nextState.text||nextProps.markups!==this.props.markups
+			||nextProps.ranges!==this.props.ranges;
 
 
 		if ( changed && nextProps.text) {
