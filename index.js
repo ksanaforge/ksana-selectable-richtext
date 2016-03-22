@@ -1,4 +1,4 @@
-var React,Paragraph,DeferListView, reactNative=false , windowW;
+var React,Paragraph,DeferListView, reactNative=false , windowW ,windowH,View;
 
 try{
 	React=require("react-native");
