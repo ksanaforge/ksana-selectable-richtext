@@ -38,7 +38,11 @@ var Paragraph=React.createClass({
 		this.props.onNativeSelection&&this.props.onNativeSelection(this.props.para,[start,len]);
 	}
 	,onTokenTouchEnd:function(evt){
-		if (this.start!==-1) this.props.onTokenTouched&&this.props.onTokenTouched(this.touchX,this.touchY);
+		if (this.start!==-1) {
+			this.props.onTokenTouched&&this.props.onTokenTouched(this.touchX,this.touchY);
+		} else {
+			this.props.unselectParagraph();
+		}
 		this.start=-1;
 		this.end=-1;
 	}

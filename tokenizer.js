@@ -6,7 +6,7 @@ var isCJK =function(c) {return ((c>=0x3000 && c<=0x9FFF)
 || (c>=0xD800 && c<0xDC00) || (c>=0xFF00) ) ;}
 var simple1=function(s) {
 	if (!s) return {tokens:[],tokenOffsets:[]};
-	var offset=0;
+	var offset=0,str;
 	var tokens=[],offsets=[];
 	s=s.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
 	var arr=s.split('\n');

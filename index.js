@@ -162,7 +162,14 @@ var SelectableRichText=React.createClass({
 		}	
 		if ( this.state.selectingParagraph===-1)return;
 		
-		this.showPopupMenu(x,y,this.props.popup);
+		if (this.state.selStart>-1) this.showPopupMenu(x,y,this.props.popup);
+	}
+	,unselectParagraph:function(){
+		if (this.state.selectingParagraph>-1) this.props.onSelectParagraph(-1);
+		if (this.state.selStart>-1) {
+			this.selectionChanged(-1,-1);
+		}
+		this.setState({selectingParagraph:-1,showpopup:false,selStart:-1,selLength:-1});
 	}
 	,onTouchEnd:function(n,evt) {
 		if (this.cancelBubble) {
@@ -178,7 +185,7 @@ var SelectableRichText=React.createClass({
 			return;
 		}
 
-		var selStart=this.selStart;
+		var selStart=this.selStart; //from nativeSelection event
 		var selLength=this.selLength;
 		if (this.state.selectingParagraph!==n) {
 			showpopup=false;
@@ -225,6 +232,7 @@ var SelectableRichText=React.createClass({
 				,markups:this.props.markups[row]
 				,textStyle:this.props.textStyle
 				,onTokenTouched:this.onTokenTouched
+				,unselectParagraph:this.unselectParagraph
 				,fetchText:this.fetchText}
 		if (reactNative) {
 			params.onTouchStart=this.onTouchStart.bind(this,idx);
