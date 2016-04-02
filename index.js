@@ -163,11 +163,12 @@ var SelectableRichText=React.createClass({
 		if ( this.state.selectingParagraph===-1)return;
 		
 		if (this.state.selStart>-1) this.showPopupMenu(x,y,this.props.popup);
+		this.selectionChanged(this.state.selStart,this.state.selLength);
 	}
 	,unselectParagraph:function(){
 		if (this.state.selectingParagraph>-1) this.props.onSelectParagraph(-1);
 		if (this.state.selStart>-1) {
-			this.selectionChanged(-1,-1);
+			this.selectionChanged(-1,-1,-1);
 		}
 		this.setState({selectingParagraph:-1,showpopup:false,selStart:-1,selLength:-1});
 	}
