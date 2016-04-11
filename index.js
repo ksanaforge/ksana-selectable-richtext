@@ -20,7 +20,23 @@ var PT=React.PropTypes;
 var rowY={};
 
 var SelectableRichText=React.createClass({
-	getInitialState:function(){
+	propTypes:{
+		rows:PT.array.isRequired 
+        ,selections:PT.object
+		,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
+		,typedef:PT.object
+		,onHyperlink:PT.func
+		,onFetchText:PT.func
+		,onSelection:PT.func
+		,popup:PT.element
+		,onZoomScale:PT.func
+	}	
+	,contextTypes:{
+		store:PT.object
+		,registerGetter:PT.func
+		,unregisterGetter:PT.func
+	}
+	,getInitialState:function(){
 		var typedef=JSON.parse(JSON.stringify(this.props.typedef));
 		if (!typedef.selection) {
 			typedef.selection=styles.selection;
@@ -31,11 +47,6 @@ var SelectableRichText=React.createClass({
 		return {typedef:typedef,popupX:0,popupY:0,showpopup:false,popup:this.props.popup,
 				selectingParagraph:-1,selStart:-1,selLength:0};
 	}
-	,contextTypes:{
-		store:PT.object
-		,registerGetter:PT.func
-		,unregisterGetter:PT.func
-	}
 	,componentDidMount:function(){
 		this.context.store.listen("selLengthPlusOne",this.selLengthPlusOne,this);
 		this.context.store.listen("selLengthTillPunc",this.selLengthTillPunc,this);
@@ -43,7 +54,7 @@ var SelectableRichText=React.createClass({
 		this.context.registerGetter("selectedText",this.getSelectedText,{overwrite:true});
 		this.context.registerGetter("selectedParagraph",this.getSelectingParagraph,{overwrite:true});
 		this.context.registerGetter("zoomScale",this.getZoomScale,{overwrite:true});
-		this.context.store.listen("showTocPopup",this.showTocPopup,this);
+		this.context.store.listen("showPopup",this.showPopup,this);
 	}
 	,componentDidUpdate:function(){
 		//navigator.pop will unregister selectedText getter
@@ -111,15 +122,8 @@ var SelectableRichText=React.createClass({
 	,hidePopup:function(){
 		this.setState({showpopup:false});
 	}
-	,propTypes:{
-		rows:PT.array.isRequired 
-        ,selections:PT.object
-		,textStyle:PT.oneOfType([PT.object,PT.number])  //StyleSheet return number
-		,typedef:PT.object
-		,onHyperlink:PT.func
-		,onFetchText:PT.func
-		,onSelection:PT.func
-		,popup:PT.element
+	,onScroll:function(evt){
+		if (this.state.showpopup) this.hidePopup();
 	}
 	,onNativeSelection:function(rowid,sel) {
 		this.selStart=sel[0];
@@ -127,7 +131,7 @@ var SelectableRichText=React.createClass({
 		this.props.onSetTextRange(rowid,sel);
 		this.setState({selStart:this.selStart,selLength:this.selLength});
 	}
-	,showTocPopup:function(opts) { //call from nav bar
+	,showPopup:function(opts) {
 		if (!opts.popup)return;
 		this.showPopupMenu(opts.px||5,opts.py||100, opts.popup);
 	}
@@ -248,10 +252,11 @@ var SelectableRichText=React.createClass({
 	}
 	,render:function(){
 		var props={};
-		for (var i in this.props)	props[i]=this.props[i];
+		for (var i in this.props) props[i]=this.props[i];
 		props.ref="listview";
 
 		props.renderRow=this.renderRow;
+		props.onScroll=this.onScroll;
 
 		props.selectingParagraph=this.state.selectingParagraph
 		var popupxy={left:this.state.popupX,top:this.state.popupY};

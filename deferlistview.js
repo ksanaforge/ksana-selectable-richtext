@@ -17,7 +17,8 @@ var DeferListView=React.createClass({
 		rows:PropTypes.array.isRequired, 
 		renderRow:PropTypes.func,
 		onViewport:PropTypes.func,
-		style:PropTypes.object
+		style:PropTypes.object,
+		onZoomScale:PropTypes.func //invoke when user adjust zoomscale
 	}
 	,rowY:{}
 	,rows:[]
@@ -183,6 +184,12 @@ var DeferListView=React.createClass({
 	}
 	,zoomScale:1
 	,onScroll:function(evt){
+		var zs=evt.nativeEvent.zoomScale;
+		if(zs!==this.zoomScale){
+			this.props.onZoomScale && this.props.onZoomScale(zs);
+		} else {
+			this.props.onScroll && this.props.onScroll(evt);
+		}
 		this.zoomScale=evt.nativeEvent.zoomScale;
 	}
 	,render:function(){

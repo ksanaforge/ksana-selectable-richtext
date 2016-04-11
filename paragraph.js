@@ -91,8 +91,7 @@ var Paragraph=React.createClass({
 									style:[this.props.textStyle,tokenStyle],ref:idx},text));
 			} else {
 				return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
-			}
-			
+			}			
 		}	
 
 		var hascrlf=token.match(/(.*?)\n+?/);
