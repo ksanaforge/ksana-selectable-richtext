@@ -26,7 +26,7 @@ var Paragraph=React.createClass({
 		}
 		this.touchX=ne.pageX;
 		this.touchY=ne.pageY;
-		var x=evt.nativeEvent.pageX-this.px,y=evt.nativeEvent.pageY-this.py;
+		var x=evt.nativeEvent.pageX-(this.px||0),y=evt.nativeEvent.pageY-(this.py||0);
 		var n=this.getTokenFromXY(x,y);
 		if (n===-1) return;
 
@@ -72,7 +72,6 @@ var Paragraph=React.createClass({
 		var L=evt.nativeEvent.layout;
 		this.tokenRect[idx]=[L.x,L.y,L.x+L.width,L.y+L.height];
 	}
-
 	,renderToken:function(token,idx){
 		var tokenStyle=getTokenStyle.call(this,idx);
 
@@ -85,9 +84,6 @@ var Paragraph=React.createClass({
 					return E(View,{key:idx,onTouchStart:this.viewpress,height:0,width:w,backgroundColor:'blue'});text="";
 				}
 				return E(View,{onLayout:this.onLayout.bind(this,idx),key:idx},E(Text,{
-								//,onTouchStart:this.onTokenTouchStart.bind(this,idx)
-								//	,onTouchEnd:this.onTokenTouchEnd.bind(this,idx)
-							//		,onTouchMove:this.onTouchMove.bind(this,idx)
 									style:[this.props.textStyle,tokenStyle],ref:idx},text));
 			} else {
 				return E(Text,{onPress:tokenHandler,style:tokenStyle,ref:idx,key:idx},text);
@@ -104,19 +100,30 @@ var Paragraph=React.createClass({
 			
 	}
 	,onLayoutContainer:function(){
+		if (this.unmounting)return;
+		if (!this.refs.container)return;
 		this.refs.container.measure(function(fx,fy,w,h,px,py){
 			this.px=px;this.py=py;
 		}.bind(this))
 	}
+	,componentWillUnmount:function(){
+		this.unmounting=true;
+	}
+	,componentDidUpdate:function(){
+		setTimeout(function(){
+			this.onLayoutContainer();
+		}.bind(this),300);
+	}
 	,render:function(){
 		repaint();
+
 		if (!this.props.selectable) {
-			this.tokenRect=[];
+			//this.tokenRect=[];
 			return E(View,{onTouchStart:this.onTouchStart,onTouchEnd:this.props.onTouchEnd},
 				E(Text,{style:this.props.textStyle},this.state.tokens.map(this.renderToken)));
 		}
-		
-		return 	E(View,	{onLayout:this.onLayoutContainer,onTouchStart:this.onTokenTouchStart,
+		//onLayout:this.onLayoutContainer, onLayout is not always working
+		return 	E(View,	{onTouchStart:this.onTokenTouchStart,
 			onTouchMove:this.onTokenTouchMove,
 			onTouchEnd:this.onTokenTouchEnd,
 			ref:"container",

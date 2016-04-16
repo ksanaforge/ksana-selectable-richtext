@@ -3,7 +3,7 @@ var tokenizer=require("./tokenizer").tokenizer;
 var decorator=require("./decorator");
 var ACTIVESELTYPE=String.fromCharCode(1)+"sel";
 
-var tokenHandler=function(n,evt){
+var tokenHandler=function(n){
 	var m=this.state.tokenMarkups[n];
 	this.props.onHyperlink&&this.props.onHyperlink(m,this.props.para);
 }

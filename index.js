@@ -133,7 +133,9 @@ var SelectableRichText=React.createClass({
 	}
 	,showPopup:function(opts) {
 		if (!opts.popup)return;
-		this.showPopupMenu(opts.px||5,opts.py||100, opts.popup);
+		var px=windowW/2-50,py=windowH/2-50; //deal with rotation
+
+		this.showPopupMenu(opts.px||px,opts.py||py, opts.popup);
 	}
 	,showPopupMenu:function(px,py,popup){
 		var POPUPMENUWIDTH=180,POPUPMENUHEIGHT=300; //TODO ,get from menu
@@ -218,9 +220,11 @@ var SelectableRichText=React.createClass({
 	}
 	,onHyperlink:function() {
 		this.cancelBubble=true;  //onTouchEnd has no effect
-		var popup=this.props.onHyperlink&&this.props.onHyperlink.apply(this,arguments);
+		var args=Array.prototype.slice.call(arguments);
+		args.push(this.pageX,this.pageY);
+		var popup=this.props.onHyperlink&&this.props.onHyperlink.apply(this,args);
 		if (popup) {
-			this.showPopupMenu(popup.props.popupX || this.pageX,this.pageY,popup);
+			this.showPopupMenu(popup.props.popupX || this.pageX,popup.props.popupY||this.pageY,popup);
 		}
 	}
 	,renderRow:function(rowdata,row){
